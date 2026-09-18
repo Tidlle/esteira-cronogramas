@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Esteira de Cronogramas</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<header class="topo">
+  <h1>Esteira de cronogramas</h1>
+  <p>Envie um cronograma em PDF ou o modelo preenchido em Word, confira os dados e baixe o PDF pronto.</p>
+</header>
+
+<main>
+
+  <!-- 1. envio ------------------------------------------------------------ -->
+  <section id="etapa-envio" class="etapa">
+    <div id="area-solta" class="solta">
+      <p class="solta__titulo">Arraste o arquivo aqui</p>
+      <p class="solta__ajuda">ou</p>
+      <label class="botao botao--primario">
+        Escolher arquivo
+        <input type="file" id="campo-arquivo" accept=".pdf,.docx" hidden>
+      </label>
+      <p class="solta__formatos">Aceita <strong>.pdf</strong> (cronograma já diagramado) ou <strong>.docx</strong> (modelo padronizado)</p>
+    </div>
+
+    <p class="rodape-envio">
+      Ainda não tem o modelo? <a href="/api/modelo">Baixe o MODELO-CRONOGRAMA.docx</a>
+      e preencha as duas tabelas.
+    </p>
+
+    <div id="envio-erro" class="alerta alerta--erro" hidden></div>
+    <div id="envio-carregando" class="carregando" hidden>Lendo o arquivo…</div>
+  </section>
+
+  <!-- 2. revisão ---------------------------------------------------------- -->
+  <section id="etapa-revisao" class="etapa" hidden>
+    <div class="revisao">
+
+      <div class="revisao__form">
+        <div id="revisao-avisos"></div>
+
+        <h2>Dados do curso</h2>
+        <div class="campos">
+          <label class="campo campo--largo">
+            <span>Curso</span>
+            <input type="text" data-caminho="curso">
+          </label>
+          <label class="campo">
+            <span>Tipo</span>
+            <select data-caminho="tipo">
+              <option value="">— selecione —</option>
+              <option value="pos-graduacao">Pós-graduação</option>
+              <option value="capacitacao">Capacitação</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Turma</span>
+            <input type="text" data-caminho="turma.codigo" placeholder="10/2026">
+          </label>
+          <label class="campo">
+            <span>Dia da semana</span>
+            <input type="text" data-caminho="turma.diaSemana" placeholder="Sábado">
+          </label>
+          <label class="campo">
+            <span>Encontros presenciais</span>
+            <input type="number" min="0" data-caminho="variaveis.encontros">
+          </label>
+          <label class="campo">
+            <span>Horário das presenciais</span>
+            <input type="text" data-caminho="variaveis.horarioPresencial" placeholder="08h00 às 15h00">
+          </label>
+          <label class="campo">
+            <span>Horário das aulas ao vivo</span>
+            <input type="text" data-caminho="variaveis.horarioAoVivo" placeholder="19h00 às 21h00">
+          </label>
+          <label class="campo">
+            <span>Intervalo</span>
+            <input type="text" data-caminho="variaveis.intervalo" placeholder="1 hora">
+          </label>
+          <label class="campo">
+            <span>Capacidade máxima</span>
+            <input type="number" min="0" data-caminho="variaveis.capacidadeMaxima">
+          </label>
+          <label class="campo">
+            <span>Limite de faltas</span>
+            <input type="text" data-caminho="variaveis.limiteFaltas" placeholder="30%">
+          </label>
+          <label class="campo campo--largo">
+            <span>Endereço</span>
+            <input type="text" data-caminho="variaveis.endereco" list="enderecos-conhecidos">
+            <datalist id="enderecos-conhecidos"></datalist>
+          </label>
+        </div>
+
+        <h2>Disciplinas <span id="contagem-disciplinas" class="contagem"></span></h2>
+        <table class="disciplinas">
+          <thead>
+            <tr>
+              <th class="col-modalidade">Modalidade</th>
+              <th>Disciplina</th>
+              <th class="col-data">Data</th>
+              <th class="col-acoes"><span class="sr-only">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody id="linhas-disciplinas"></tbody>
+        </table>
+        <button type="button" id="botao-adicionar" class="botao botao--discreto">
+          + Adicionar disciplina
+        </button>
+      </div>
+
+      <aside class="revisao__previa">
+        <div class="previa__topo">
+          <h2>Prévia</h2>
+          <span id="previa-estado" class="previa__estado"></span>
+        </div>
+        <div class="previa__moldura">
+          <iframe id="previa" title="Prévia do cronograma"></iframe>
+        </div>
+      </aside>
+
+    </div>
+
+    <div class="acoes">
+      <button type="button" id="botao-voltar" class="botao botao--discreto">Enviar outro arquivo</button>
+      <button type="button" id="botao-gerar" class="botao botao--primario">Gerar PDF</button>
+    </div>
+
+    <div id="revisao-erro" class="alerta alerta--erro" hidden></div>
+  </section>
+
+  <!-- 3. resultado -------------------------------------------------------- -->
+  <section id="etapa-resultado" class="etapa" hidden>
+    <div class="resultado">
+      <p class="resultado__titulo">PDF pronto</p>
+      <p id="resultado-nome" class="resultado__nome"></p>
+      <div id="resultado-avisos"></div>
+      <div class="acoes acoes--centro">
+        <a id="link-download" class="botao botao--primario" download>Baixar novamente</a>
+        <button type="button" id="botao-revisar" class="botao botao--discreto">Voltar à revisão</button>
+        <button type="button" id="botao-novo" class="botao botao--discreto">Novo cronograma</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

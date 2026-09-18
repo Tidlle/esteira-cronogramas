@@ -1,0 +1,32 @@
+{
+  "name": "esteira-cronogramas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Gera cronogramas de curso em PDF a partir de um docx ou pdf de entrada",
+  "scripts": {
+    "start": "node server.mjs",
+    "extrair": "node scripts/extrair.mjs",
+    "testar-extracao": "node scripts/testar-extracao.mjs",
+    "extrair-logo": "node scripts/extrair-logo.mjs",
+    "gerar-modelo": "node scripts/gerar-modelo.mjs",
+    "testar-docx": "node scripts/testar-docx.mjs",
+    "construir": "node scripts/construir.mjs",
+    "testar-template": "node scripts/testar-template.mjs",
+    "pre-visualizar": "node scripts/pre-visualizar.mjs",
+    "gerar-pdf": "node scripts/gerar-pdf.mjs",
+    "testar-servidor": "node scripts/testar-servidor.mjs"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.11.1",
+    "jszip": "^3.10.2",
+    "multer": "^2.4.0",
+    "pdfjs-dist": "^4.10.38",
+    "playwright": "^1.63.0"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^0.1.60",
+    "docx": "^9.7.1"
+  }
+}

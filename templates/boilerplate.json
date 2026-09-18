@@ -1,0 +1,98 @@
+{
+  "_comentario": [
+    "Textos fixos da página de apresentação, por família de curso. O texto é",
+    "institucional e não vem do arquivo enviado — do arquivo vêm só os valores",
+    "que preenchem os campos entre chaves.",
+    "",
+    "Campos disponíveis: {curso} {turma} {diaSemana} {encontros}",
+    "{horarioPresencial} {horarioAoVivo} {intervalo} {endereco}",
+    "{capacidadeMaxima} {limiteFaltas} {intervaloFrase}",
+    "",
+    "Um card com \"condicao\" só aparece quando aquele campo tem valor.",
+    "Para adicionar uma família nova, acrescente uma entrada aqui e outra em",
+    "FAMILIAS, em src/extract/layouts.mjs."
+  ],
+
+  "pos-graduacao": {
+    "rotulo": "Pós-graduação",
+    "cards": [
+      {
+        "icone": "presenca",
+        "titulo": "Presença",
+        "texto": "A ausência na aula teórica acarreta o impedimento de participação na aula prática."
+      },
+      {
+        "icone": "hospital",
+        "titulo": "Aulas presenciais",
+        "texto": "Aula prática das {horarioPresencial}{intervaloFrase}."
+      },
+      {
+        "icone": "livros",
+        "titulo": "Disciplinas EAD",
+        "texto": "Conteúdo complementar online obrigatório, que aprofunda os temas abordados nas aulas presenciais e síncronas."
+      },
+      {
+        "icone": "plataforma",
+        "titulo": "Plataforma",
+        "texto": "Pela plataforma de estudos você acessa as disciplinas EAD e acompanha o lançamento das notas das aulas presenciais."
+      },
+      {
+        "icone": "estagio",
+        "titulo": "Estágios",
+        "condicao": "temEstagios",
+        "texto": "Após a conclusão do conteúdo teórico, o curso conta com campos de estágio, com vivência prática e aplicação dos conhecimentos adquiridos."
+      },
+      {
+        "icone": "endereco",
+        "titulo": "Endereço",
+        "texto": "{endereco}"
+      }
+    ],
+    "avisos": [
+      "Sua presença é fundamental em todas as aulas;",
+      "O limite de faltas é de {limiteFaltas} — caso atingido, as aulas deverão ser repostas;",
+      "Aulas presenciais perdidas devem ser remarcadas conforme disponibilidade da instituição;",
+      "As disciplinas EAD são obrigatórias e fazem parte do seu cronograma;",
+      "A capacidade máxima permitida na turma é de {capacidadeMaxima} alunos."
+    ]
+  },
+
+  "capacitacao": {
+    "rotulo": "Capacitação",
+    "cards": [
+      {
+        "icone": "gravadas",
+        "titulo": "Aulas gravadas",
+        "texto": "Todo conteúdo síncrono fica disponível para você assistir quando quiser, no seu ritmo."
+      },
+      {
+        "icone": "aovivo",
+        "titulo": "Aulas ao vivo",
+        "condicao": "horarioAoVivo",
+        "texto": "Aulas online das {horarioAoVivo}, para preparação teórica antes da prática. Ficam gravadas para revisão posterior."
+      },
+      {
+        "icone": "hospital",
+        "titulo": "Aulas presenciais",
+        "texto": "Encontros práticos em laboratório das {horarioPresencial}, com supervisão direta do professor. Você aplica as técnicas em modelos reais."
+      },
+      {
+        "icone": "livros",
+        "titulo": "Disciplinas EAD",
+        "texto": "Conteúdo complementar online obrigatório, que aprofunda os temas abordados nas aulas presenciais e síncronas."
+      },
+      {
+        "icone": "endereco",
+        "titulo": "Endereço",
+        "texto": "{endereco}"
+      }
+    ],
+    "avisos": [
+      "Sua presença é fundamental em todas as aulas, especialmente nas ao vivo, que preparam você para a prática;",
+      "Aulas práticas perdidas devem ser remarcadas conforme disponibilidade da instituição;",
+      "As disciplinas EAD são obrigatórias e fazem parte do seu cronograma;",
+      "Todas as aulas ao vivo ficam gravadas e disponíveis para acesso posterior;",
+      "A capacidade máxima permitida na turma é de {capacidadeMaxima} alunos."
+    ]
+  }
+}

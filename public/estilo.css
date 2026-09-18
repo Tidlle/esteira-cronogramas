@@ -1,0 +1,403 @@
+/* Interface da esteira. Usa a mesma paleta institucional do cronograma, mas é
+   deliberadamente sóbria: quem olha tem que reparar na prévia, não na tela. */
+
+:root {
+  --vermelho: #a62432;
+  --vermelho-claro: #fbf4f4;
+  --papel: #f4f2ef;
+  --branco: #fff;
+  --tinta: #2c2c2a;
+  --tinta-media: #5f5e5a;
+  --tinta-fraca: #8c8b87;
+  --linha: #e2e0dc;
+  --alerta: #8a5a12;
+  --alerta-fundo: #fdf4e3;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  font: 400 15px/1.55 Inter, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.topo {
+  padding: 26px 32px 22px;
+  background: var(--vermelho);
+  color: var(--branco);
+}
+
+.topo h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.topo p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #f0c8cc;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 32px 56px;
+}
+
+h2 {
+  margin: 26px 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-media);
+}
+
+h2:first-child {
+  margin-top: 0;
+}
+
+/* --- envio -------------------------------------------------------------- */
+
+.solta {
+  padding: 56px 24px;
+  text-align: center;
+  background: var(--branco);
+  border: 2px dashed var(--linha);
+  border-radius: 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.solta--ativa {
+  background: var(--vermelho-claro);
+  border-color: var(--vermelho);
+}
+
+.solta__titulo {
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.solta__ajuda {
+  margin: 8px 0 14px;
+  color: var(--tinta-fraca);
+}
+
+.solta__formatos {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.rodape-envio {
+  margin-top: 16px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--tinta-media);
+}
+
+.rodape-envio a,
+a {
+  color: var(--vermelho);
+}
+
+/* --- revisão ------------------------------------------------------------ */
+
+.revisao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 520px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .revisao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.revisao__form {
+  padding: 24px 26px;
+  background: var(--branco);
+  border-radius: 14px;
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.campo--largo {
+  grid-column: 1 / -1;
+}
+
+.campo > span {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--tinta-media);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--tinta);
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--vermelho);
+  outline-offset: -1px;
+  border-color: var(--vermelho);
+}
+
+/* Campo que a extração não conseguiu preencher. A marca some assim que o
+   usuário digita, para não ficar acusando um campo já resolvido. */
+.campo--faltando input,
+.campo--faltando select {
+  background: var(--alerta-fundo);
+  border-color: #e0bd7c;
+}
+
+/* --- tabela de disciplinas ---------------------------------------------- */
+
+.disciplinas {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.disciplinas th {
+  padding: 0 8px 7px 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.disciplinas td {
+  padding: 3px 8px 3px 0;
+  vertical-align: middle;
+}
+
+.disciplinas .col-modalidade {
+  width: 140px;
+}
+.disciplinas .col-data {
+  width: 120px;
+}
+.disciplinas .col-acoes {
+  width: 76px;
+}
+
+.acoes-linha {
+  display: flex;
+  gap: 2px;
+}
+
+.mini {
+  width: 24px;
+  height: 28px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--tinta-fraca);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mini:hover {
+  color: var(--vermelho);
+  border-color: var(--linha);
+}
+
+.mini:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.contagem {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta-fraca);
+}
+
+/* --- prévia -------------------------------------------------------------- */
+
+.revisao__previa {
+  position: sticky;
+  top: 20px;
+  padding: 18px;
+  background: var(--branco);
+  border-radius: 14px;
+}
+
+.previa__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.previa__topo h2 {
+  margin: 0;
+}
+
+.previa__estado {
+  font-size: 12.5px;
+  color: var(--tinta-fraca);
+}
+
+/* O cronograma é desenhado em páginas de 1440px; a moldura reduz por
+   transformação em vez de redimensionar o conteúdo, para a prévia mostrar
+   exatamente as mesmas quebras de página que o PDF vai ter. */
+.previa__moldura {
+  margin-top: 12px;
+  height: 640px;
+  overflow: hidden auto;
+  background: var(--papel);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+}
+
+#previa {
+  width: 1440px;
+  height: 3400px;
+  border: 0;
+  transform: scale(0.3236);
+  transform-origin: top left;
+}
+
+/* --- botões e avisos ----------------------------------------------------- */
+
+.botao {
+  display: inline-block;
+  padding: 10px 20px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.botao--primario {
+  color: var(--branco);
+  background: var(--vermelho);
+}
+
+.botao--primario:hover {
+  background: #8d1d2a;
+}
+
+.botao--primario:disabled {
+  background: var(--tinta-fraca);
+  cursor: default;
+}
+
+.botao--discreto {
+  color: var(--tinta-media);
+  background: var(--branco);
+  border-color: var(--linha);
+}
+
+.botao--discreto:hover {
+  border-color: var(--tinta-fraca);
+}
+
+.acoes {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.acoes--centro {
+  justify-content: center;
+}
+
+.alerta {
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.alerta--erro {
+  color: #7a1f1f;
+  background: #fceceb;
+  border-color: #c0392b;
+}
+
+.alerta--atencao {
+  color: var(--alerta);
+  background: var(--alerta-fundo);
+  border-color: #e0bd7c;
+}
+
+.alerta ul {
+  margin: 6px 0 0 18px;
+}
+
+.carregando {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--tinta-media);
+}
+
+/* --- resultado ----------------------------------------------------------- */
+
+.resultado {
+  padding: 44px 24px;
+  text-align: center;
+  background: var(--branco);
+  border-radius: 14px;
+}
+
+.resultado__titulo {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--vermelho);
+}
+
+.resultado__nome {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--tinta-media);
+}
+
+.resultado .alerta {
+  text-align: left;
+}

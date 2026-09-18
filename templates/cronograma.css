@@ -1,0 +1,473 @@
+/* Design aprovado: fundo bege quente, cartões brancos, faixa de marca vermelha
+   no topo e diagonais diluídas na margem inferior.
+
+   A regra que governa a decoração: cor nas bordas e nos cartões, nunca atrás de
+   texto corrido. As diagonais ficam presas à faixa inferior e sempre atrás dos
+   cartões, que são opacos — nenhum texto de conteúdo cai sobre elas. */
+
+:root {
+  --vermelho: #a62432;
+  --vermelho-escuro: #7d1a25;
+  --rosa-claro: #edb9bf;
+  --papel: #f1efea;
+  --branco: #ffffff;
+  --tinta: #2c2c2a;
+  --tinta-media: #5f5e5a;
+  --tinta-fraca: #8c8b87;
+  --linha: #e6e3dd;
+  --zebra: #faf9f7;
+  --diagonal-cinza: #e9e6e0;
+  --diagonal-rosa: #f3e4e5;
+
+  --pagina-largura: 1440px;
+  --pagina-altura: 810px;
+  --margem: 56px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #d9d6d0;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+.pagina {
+  position: relative;
+  width: var(--pagina-largura);
+  height: var(--pagina-altura);
+  overflow: hidden;
+  background: var(--papel);
+  /* Margem só para a visualização no navegador; na exportação cada página vira
+     uma folha e o espaçamento entre elas some. */
+  margin: 0 auto 28px;
+}
+
+@page {
+  /* O tamanho da folha é definido por quem exporta (src/generate-pdf.mjs).
+     Declará-lo aqui também faz o Chromium diagramar para uma folha e imprimir
+     noutra, deixando o conteúdo pequeno e centralizado numa moldura branca. */
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: none;
+  }
+  .pagina {
+    margin: 0;
+  }
+  /* Sem o :not(:last-child) o Chromium emite uma folha em branco no fim. */
+  .pagina:not(:last-child) {
+    page-break-after: always;
+  }
+}
+
+/* --- decoração da margem inferior ------------------------------------- */
+
+.faixa-inferior {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 96px;
+}
+
+.pagina--cronograma .faixa-inferior {
+  height: 60px;
+}
+
+.faixa-inferior::before,
+.faixa-inferior::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.faixa-inferior::before {
+  background: var(--diagonal-cinza);
+  clip-path: polygon(0 62%, 100% 8%, 100% 100%, 0 100%);
+}
+
+.faixa-inferior::after {
+  background: var(--diagonal-rosa);
+  clip-path: polygon(0 100%, 62% 34%, 100% 52%, 100% 100%);
+}
+
+/* --- estrutura --------------------------------------------------------- */
+
+.folha {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  height: 112px;
+  padding: 0 var(--margem);
+  background: var(--vermelho);
+}
+
+.cabecalho__etiqueta {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rosa-claro);
+}
+
+.cabecalho__curso {
+  margin-top: 4px;
+  font-family: Poppins, Inter, system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.12;
+  color: var(--branco);
+}
+
+/* Degraus de tamanho conforme o comprimento do nome do curso: o acervo tem
+   nomes de 17 a 86 caracteres, e um tamanho único estouraria a faixa. */
+.cabecalho__curso--g {
+  font-size: 36px;
+}
+.cabecalho__curso--m {
+  font-size: 30px;
+}
+.cabecalho__curso--p {
+  font-size: 24px;
+}
+.cabecalho__curso--pp {
+  font-size: 20px;
+}
+
+/* O logo é cinza-escuro com detalhe vermelho e ficaria ilegível sobre o
+   vermelho institucional; o chip branco resolve — mesma solução já usada na
+   esteira de informativos para fundos escuros. */
+.cabecalho__marca {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: var(--branco);
+  border-radius: 999px;
+}
+
+.cabecalho__marca img {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+.corpo {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: 22px var(--margem) 0;
+}
+
+.rodape {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--margem) 18px;
+  font-size: 13px;
+  color: #7a7974;
+}
+
+/* --- página de apresentação -------------------------------------------- */
+
+.ficha {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.ficha__item {
+  padding: 13px 18px;
+  background: var(--branco);
+  border-radius: 12px;
+}
+
+.ficha__item--destaque {
+  background: var(--vermelho);
+}
+
+.ficha__rotulo {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.ficha__item--destaque .ficha__rotulo {
+  color: var(--rosa-claro);
+}
+
+.ficha__valor {
+  margin-top: 2px;
+  font-family: Poppins, Inter, system-ui, sans-serif;
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.ficha__item--destaque .ficha__valor {
+  color: var(--branco);
+}
+
+.cartoes {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+/* Com cinco cartões a última linha ficaria com um buraco; o endereço ocupa as
+   duas colunas restantes e fecha a grade. */
+.cartoes--cinco .cartao:last-child {
+  grid-column: span 2;
+}
+
+/* Conteúdo centralizado na vertical: os cartões de uma linha têm a mesma
+   altura mas textos de tamanhos diferentes, e alinhados ao topo sobrava um
+   bloco de branco embaixo de cada um. */
+.cartao {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 20px;
+  background: var(--branco);
+  border-radius: 12px;
+}
+
+.cartao__icone {
+  width: 26px;
+  height: 26px;
+  color: var(--vermelho);
+}
+
+.cartao__titulo {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+
+.cartao__texto {
+  margin-top: 6px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.avisos {
+  padding: 13px 20px;
+  background: var(--branco);
+  border-left: 5px solid var(--vermelho);
+}
+
+.avisos__titulo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vermelho);
+}
+
+.avisos__titulo svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Um aviso por linha, e não todos corridos num parágrafo só: a caixa fica
+   legível e, de quebra, ocupa a altura que sobrava dentro dos cartões. */
+.avisos__lista {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--tinta-media);
+  list-style: none;
+}
+
+.avisos__lista li {
+  position: relative;
+  padding-left: 15px;
+}
+
+.avisos__lista li::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 2px;
+  width: 4px;
+  height: 4px;
+  background: var(--vermelho);
+  border-radius: 50%;
+}
+
+/* --- página de cronograma ---------------------------------------------- */
+
+.quadro {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 4px 24px 12px;
+  background: var(--branco);
+  border-radius: 12px;
+}
+
+/* Aplicado pelo script à última página, depois de paginar: durante a
+   distribuição o quadro precisa ter altura fixa, senão nunca acusa estouro e
+   não há onde quebrar. */
+.quadro--conteudo {
+  flex: 0 0 auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tabela th {
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+  border-bottom: 1px solid var(--linha);
+}
+
+.tabela col.col-modalidade {
+  width: 150px;
+}
+.tabela col.col-data {
+  width: 156px;
+}
+
+.tabela th.celula-data,
+.tabela td.celula-data {
+  text-align: right;
+}
+
+.tabela td {
+  padding: 8px 0;
+  font-size: 15px;
+  line-height: 1.4;
+  vertical-align: middle;
+  color: var(--tinta);
+}
+
+.tabela td.celula-nome {
+  padding-right: 20px;
+  padding-left: 14px;
+}
+
+.tabela tbody tr:nth-child(even) {
+  background: var(--zebra);
+}
+
+.selo {
+  display: inline-block;
+  padding: 3px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  white-space: nowrap;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+}
+
+.selo--presencial {
+  background: var(--vermelho);
+  color: var(--branco);
+}
+
+.selo--aovivo {
+  border-color: var(--vermelho);
+  color: var(--vermelho);
+}
+
+.selo--ead {
+  background: var(--tinta-fraca);
+  color: var(--branco);
+}
+
+/* Modalidade não declarada (estágios) ou fora do vocabulário conhecido. */
+.selo--outra {
+  background: var(--linha);
+  color: var(--tinta-media);
+}
+
+/* O dia da semana fica na mesma linha da data, e não abaixo: numa linha
+   própria ele custava cerca de 20px por disciplina e derrubava o número de
+   linhas por página de 12 para 9. */
+.data-dia {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.data-vazia {
+  color: var(--tinta-fraca);
+}
+
+/* Disciplinas EAD não têm data porque ficam liberadas o curso inteiro; numa
+   tabela cronológica elas só geravam uma coluna de traços.
+
+   O bloco fica dentro do mesmo cartão da tabela, separado por um filete, e não
+   num cartão próprio: como cartão separado ele custava cerca de 35px em
+   margem, padding e borda, o bastante para empurrar as disciplinas EAD de um
+   curso de 12 encontros para uma página inteira só delas. */
+.bloco-ead {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--linha);
+}
+
+/* Quando o bloco acaba numa página sozinho, o filete não separa nada. */
+.bloco-ead--sozinho {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.bloco-ead__titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinta-media);
+}
+
+.bloco-ead__lista {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px 28px;
+  margin-top: 9px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
