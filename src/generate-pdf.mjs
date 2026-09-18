@@ -20,13 +20,43 @@ const ESPERA_MS = 20000;
 
 let navegadorCompartilhado = null;
 
+// Em serverless não existe o Chromium que o `playwright install` baixa: o
+// pacote de browsers não vai no deploy, e o sistema de arquivos é somente
+// leitura fora de /tmp. O @sparticuz/chromium resolve isso trazendo um binário
+// próprio, compilado para o ambiente da AWS Lambda, que é onde a Vercel roda.
+const EM_SERVERLESS = Boolean(
+  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME,
+);
+
+/**
+ * Como abrir o Chromium no ambiente atual. Local: o navegador que o Playwright
+ * instalou. Serverless: o binário embutido no @sparticuz/chromium.
+ */
+async function opcoesDeLancamento() {
+  if (!EM_SERVERLESS) return {};
+
+  // Importado só aqui: são uns 50 MB que a execução local não precisa carregar.
+  const { default: chromiumServerless } = await import("@sparticuz/chromium");
+
+  // A aceleração via SwiftShader não serve para nada num documento de texto e
+  // cor chapada, e só custa tempo de inicialização a cada chamada.
+  chromiumServerless.setGraphicsMode = false;
+
+  return {
+    args: chromiumServerless.args,
+    executablePath: await chromiumServerless.executablePath(),
+  };
+}
+
 /**
  * Um único Chromium para todo o processo. Subir um navegador por PDF custa
  * cerca de um segundo cada, o que pesa quando o servidor gera vários seguidos.
+ * Em serverless o processo é reaproveitado entre chamadas enquanto a instância
+ * está quente, então o mesmo cache ajuda lá também.
  */
 async function obterNavegador() {
   if (!navegadorCompartilhado || !navegadorCompartilhado.isConnected()) {
-    navegadorCompartilhado = await chromium.launch();
+    navegadorCompartilhado = await chromium.launch(await opcoesDeLancamento());
   }
   return navegadorCompartilhado;
 }

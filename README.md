@@ -52,10 +52,65 @@ topo listando quais são. Isso evita ter que conferir tudo às cegas.
 |---|---|---|
 | `PORT` | `3000` | Porta do servidor |
 | `HOST` | `127.0.0.1` | Interface de escuta |
+| `TAMANHO_MAXIMO_MB` | `25` local, `4` em serverless | Limite do arquivo enviado |
 
 O padrão deixa o sistema acessível **apenas na máquina que o executa**. Para liberar na rede
 local, use `HOST=0.0.0.0` — mas note que **não há autenticação**: quem alcançar a porta usa o
 sistema. Se for publicar para várias pessoas, ponha atrás de um proxy com login.
+
+## Publicar
+
+O app roda em dois formatos a partir do mesmo código:
+
+- **Servidor de longa duração** — `server.mjs` chama `listen()`. É o `npm start`, e é também o
+  que roda num container (Docker, Render, Railway, Fly).
+- **Função serverless** — `api/index.mjs` entrega o mesmo app Express ao runtime da plataforma.
+  É o que a Vercel usa.
+
+Os dois importam `src/app.mjs`, que não sobe servidor nenhum; assim não existe uma versão
+"de produção" com rotas diferentes da versão local.
+
+### Vercel
+
+O ajuste que essa plataforma exige é o navegador. O `playwright install` baixa o Chromium para
+um cache da máquina, e esse cache **não vai no deploy** — daí o erro
+`browserType.launch: Executable doesn't exist at /home/sbx_user…/ms-playwright/…`. Em serverless
+o [`@sparticuz/chromium`](https://github.com/Sparticuz/chromium) resolve, trazendo um binário
+compilado para o ambiente da AWS Lambda, que é onde a Vercel roda. A escolha é automática:
+`src/generate-pdf.mjs` detecta `VERCEL`/`AWS_LAMBDA_FUNCTION_NAME` e só então carrega o pacote.
+
+O [vercel.json](vercel.json) já traz o necessário: 2 GB de memória, 60s de duração e a inclusão
+explícita do binário e das pastas de template no bundle. As dependências de produção somam cerca
+de 128 MB, dentro do limite de 250 MB.
+
+Pontos a saber antes de publicar:
+
+- **Não há autenticação.** Numa URL pública, qualquer pessoa com o link envia arquivos e gera
+  PDFs — consumindo a cota da conta. Proteja com o Vercel Authentication (Deployment
+  Protection) ou ponha um login na frente.
+- **Arquivo enviado fica limitado a 4 MB**, porque o corpo de uma requisição na Vercel não passa
+  de 4,5 MB. Os cronogramas do acervo têm cerca de 1,1 MB, então na prática cabe; arquivos
+  maiores são recusados com mensagem explicada.
+- **A primeira geração depois de um tempo parado demora**, porque o Chromium precisa subir. As
+  seguintes aproveitam a instância quente.
+- **As fontes vêm do Google Fonts** a cada geração. Funciona, mas é uma chamada de rede a mais
+  no caminho; se falhar, o PDF sai com a fonte do sistema e o aviso aparece junto do download.
+
+### Container
+
+Num host de container o código roda **sem nenhuma alteração** — inclusive sem o
+`@sparticuz/chromium`, já que a imagem pode ter o Chromium de verdade. É o formato que evita
+todas as ressalvas acima, à custa de manter um processo no ar:
+
+```dockerfile
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . .
+ENV HOST=0.0.0.0
+CMD ["node", "server.mjs"]
+```
 
 ## Rotas
 

@@ -18,6 +18,7 @@
     "testar-servidor": "node scripts/testar-servidor.mjs"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^153.0.0",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.11.1",
     "jszip": "^3.10.2",
