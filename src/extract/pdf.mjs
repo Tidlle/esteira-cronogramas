@@ -278,6 +278,10 @@ function extrairDisciplinas(pagina) {
         modalidade: ancora.modalidade,
         nome: comData.nome,
         data: dataExplicita ? dataExplicita.texto : comData.data,
+        // O layout do Canva não traz carga horária em lugar nenhum da tabela;
+        // não há âncora para extrair. O campo existe no schema (fica null) só
+        // por consistência com a origem .docx, que aceita esse dado.
+        cargaHoraria: null,
       });
 
       consumidos.add(ancora.item);
@@ -298,7 +302,12 @@ function extrairDisciplinas(pagina) {
     const comData = separarDataEmAberto(bruto);
     if (!comData.data || !comData.nome) continue;
 
-    disciplinas.push({ modalidade: null, nome: comData.nome, data: comData.data });
+    disciplinas.push({
+      modalidade: null,
+      nome: comData.nome,
+      data: comData.data,
+      cargaHoraria: null,
+    });
     for (const item of partes) consumidos.add(item);
   }
 

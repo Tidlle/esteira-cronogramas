@@ -211,6 +211,9 @@ select:focus {
 .disciplinas .col-modalidade {
   width: 140px;
 }
+.disciplinas .col-carga {
+  width: 100px;
+}
 .disciplinas .col-data {
   width: 120px;
 }

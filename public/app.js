@@ -244,6 +244,15 @@ function linhaDisciplina(disciplina, indice) {
     agendarPrevia();
   });
 
+  const cargaHoraria = document.createElement("input");
+  cargaHoraria.type = "text";
+  cargaHoraria.placeholder = "40h";
+  cargaHoraria.value = disciplina.cargaHoraria ?? "";
+  cargaHoraria.addEventListener("input", () => {
+    disciplina.cargaHoraria = cargaHoraria.value.trim() || null;
+    agendarPrevia();
+  });
+
   const data = document.createElement("input");
   data.type = "text";
   data.placeholder = "dd/mm/aaaa";
@@ -273,6 +282,7 @@ function linhaDisciplina(disciplina, indice) {
   for (const [conteudo, classe] of [
     [modalidade, "col-modalidade"],
     [nome, ""],
+    [cargaHoraria, "col-carga"],
     [data, "col-data"],
     [acoes, "col-acoes"],
   ]) {
@@ -313,7 +323,12 @@ function atualizarContagem() {
 }
 
 $("#botao-adicionar").addEventListener("click", () => {
-  dados.disciplinas.push({ modalidade: "Presencial", nome: "", data: null });
+  dados.disciplinas.push({
+    modalidade: "Presencial",
+    nome: "",
+    data: null,
+    cargaHoraria: null,
+  });
   montarDisciplinas();
   // Leva o cursor direto para o nome da disciplina recém-criada.
   corpoDisciplinas.lastElementChild?.querySelector('input[type="text"]')?.focus();

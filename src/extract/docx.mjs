@@ -7,7 +7,7 @@ import { detectarFamilia, normalizarModalidade, opcionaisDaFamilia } from "./lay
 import {
   CAMPOS,
   COLUNAS_DISCIPLINAS,
-  COLUNA_EAD,
+  COLUNAS_EAD,
   acharPorRotulo,
   definirEmCaminho,
   ehCabecalhoEad,
@@ -113,7 +113,8 @@ function classificarTabelas(matrizes) {
       continue;
     }
 
-    // Duas das três colunas já bastam: alguém pode ter removido a de data.
+    // Duas colunas reconhecidas já bastam: alguém pode ter removido a de data
+    // ou não ter a de carga horária, que é opcional.
     if (reconhecidas >= 2 && !disciplinas) {
       disciplinas = { matriz, cabecalho };
       continue;
@@ -131,19 +132,23 @@ function classificarTabelas(matrizes) {
 }
 
 /**
- * Lê a tabela só de EAD. A coluna do nome é localizada pelo cabeçalho, para a
- * tabela tolerar uma coluna de numeração à esquerda (que o modelo traz) ou
- * qualquer outra coluna auxiliar que a equipe acrescente.
+ * Lê a tabela só de EAD. As colunas de nome e carga horária são localizadas
+ * pelo cabeçalho, para a tabela tolerar uma coluna de numeração à esquerda
+ * (que o modelo traz) ou qualquer outra coluna auxiliar que a equipe acrescente.
  */
 function lerTabelaEad(matriz) {
-  const indiceNome = matriz[0].findIndex((celula) =>
-    acharPorRotulo(primeiraLinha(celula), [COLUNA_EAD]),
+  const cabecalho = matriz[0].map((celula) =>
+    acharPorRotulo(primeiraLinha(celula), COLUNAS_EAD),
+  );
+  const indiceNome = cabecalho.findIndex((coluna) => coluna?.chave === "nome");
+  const indiceCarga = cabecalho.findIndex(
+    (coluna) => coluna?.chave === "cargaHoraria",
   );
 
-  const nomes = [];
+  const disciplinas = [];
   for (const linha of matriz.slice(1)) {
     // Sem cabeçalho reconhecido, vale a célula mais longa da linha — é sempre o
-    // nome, nunca o número de ordem.
+    // nome, nunca o número de ordem nem a carga horária.
     const bruto =
       indiceNome >= 0
         ? linha[indiceNome]
@@ -152,9 +157,13 @@ function lerTabelaEad(matriz) {
     const nome = (bruto ?? "").trim();
     // Descarta a numeração de uma linha em que só ela foi preenchida.
     if (!nome || /^\d+$/.test(nome)) continue;
-    nomes.push(nome);
+
+    const cargaHoraria =
+      (indiceCarga >= 0 ? linha[indiceCarga] : "")?.trim() || null;
+
+    disciplinas.push({ nome, cargaHoraria });
   }
-  return nomes;
+  return disciplinas;
 }
 
 function converterValor(campo, bruto) {
@@ -251,6 +260,7 @@ export async function extrairDeDocx(caminho) {
     const iModalidade = indiceDe("modalidade");
     const iNome = indiceDe("nome");
     const iData = indiceDe("data");
+    const iCargaHoraria = indiceDe("cargaHoraria");
 
     for (const linha of matriz.slice(1)) {
       const nome = (iNome >= 0 ? linha[iNome] : "")?.trim();
@@ -270,7 +280,10 @@ export async function extrairDeDocx(caminho) {
         ? "A definir"
         : dataBruta || null;
 
-      listaDisciplinas.push({ modalidade, nome, data });
+      const cargaHoraria =
+        (iCargaHoraria >= 0 ? linha[iCargaHoraria] : "")?.trim() || null;
+
+      listaDisciplinas.push({ modalidade, nome, data, cargaHoraria });
     }
   } else if (!tabelaEad) {
     avisos.push(
@@ -281,8 +294,8 @@ export async function extrairDeDocx(caminho) {
 
   // As EAD entram depois das datadas, que é a ordem em que saem no cronograma.
   if (tabelaEad) {
-    for (const nome of lerTabelaEad(tabelaEad)) {
-      listaDisciplinas.push({ modalidade: "EAD", nome, data: null });
+    for (const { nome, cargaHoraria } of lerTabelaEad(tabelaEad)) {
+      listaDisciplinas.push({ modalidade: "EAD", nome, data: null, cargaHoraria });
     }
   }
 

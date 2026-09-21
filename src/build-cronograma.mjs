@@ -34,6 +34,8 @@ const ICONES = {
     '<rect x="5" y="4" width="14" height="17" rx="1.5"/><path d="M9 4h6v3H9z"/><path d="M9 12h6M9 16h4"/>',
   atencao:
     '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.1"/>',
+  relogio:
+    '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
 };
 
 const DIAS_ABREVIADOS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -195,6 +197,12 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
     </section>`;
 }
 
+/** Selo pequeno com a carga horária, quando informada — "40h" ao lado do nome. */
+function seloCargaHoraria(cargaHoraria) {
+  if (!cargaHoraria) return "";
+  return `<span class="carga-horaria">${icone("relogio")}${escapar(cargaHoraria)}</span>`;
+}
+
 function montarLinha(disciplina) {
   const dia = diaDaSemana(disciplina.data);
   const data = disciplina.data
@@ -205,7 +213,9 @@ function montarLinha(disciplina) {
               <td><span class="selo ${classeDoSelo(disciplina.modalidade)}">${escapar(
                 disciplina.modalidade ?? "A definir",
               )}</span></td>
-              <td class="celula-nome">${escapar(disciplina.nome)}</td>
+              <td class="celula-nome">${escapar(disciplina.nome)}${seloCargaHoraria(
+                disciplina.cargaHoraria,
+              )}</td>
               <td class="celula-data">${data}</td>
             </tr>`;
 }
@@ -250,7 +260,10 @@ function moldeCronograma(dados, familia, logoEmbutido) {
 function montarBlocoEad(disciplinas) {
   if (!disciplinas.length) return "";
   const itens = disciplinas
-    .map((d) => `<span>${escapar(d.nome)}</span>`)
+    .map(
+      (d) =>
+        `<span>${escapar(d.nome)}${seloCargaHoraria(d.cargaHoraria)}</span>`,
+    )
     .join("");
   return `
           <section class="bloco-ead">

@@ -95,6 +95,16 @@ export const CAMPOS = [
   },
 ];
 
+// Carga horária é opcional em ambas as tabelas de disciplina — a com data e a
+// EAD. Não existe hoje no acervo (os PDFs do Canva não trazem essa informação),
+// então nenhum cronograma antigo tem esse dado; é um campo novo que só chega
+// por preenchimento manual, no modelo ou na tela de revisão.
+export const COLUNA_CARGA_HORARIA = {
+  chave: "cargaHoraria",
+  rotulo: "Carga Horária",
+  sinonimos: ["carga horaria", "horas", "ch", "carga"],
+};
+
 // Cabeçalhos aceitos para a tabela de disciplinas com data. A ordem das colunas
 // é lida do cabeçalho, não fixada, para o arquivo tolerar quem as reordene.
 export const COLUNAS_DISCIPLINAS = [
@@ -113,16 +123,19 @@ export const COLUNAS_DISCIPLINAS = [
     rotulo: "Data",
     sinonimos: ["datas", "dia"],
   },
+  COLUNA_CARGA_HORARIA,
 ];
 
-// As disciplinas EAD ganham tabela própria, de uma coluna só. No acervo elas são
-// 37% do total, e na tabela única obrigavam a repetir "EAD" e deixar a data em
+// As disciplinas EAD ganham tabela própria. No acervo elas são 37% do total, e
+// numa tabela única com as demais obrigavam a repetir "EAD" e deixar a data em
 // branco em cada uma — trabalho manual que não informa nada.
 export const COLUNA_EAD = {
   chave: "nome",
   rotulo: "Disciplina EAD",
   sinonimos: ["disciplinas ead", "ead", "nome da disciplina ead"],
 };
+
+export const COLUNAS_EAD = [COLUNA_EAD, COLUNA_CARGA_HORARIA];
 
 /** Reconhece o cabeçalho da tabela só de EAD. */
 export function ehCabecalhoEad(celulas) {
@@ -175,14 +188,19 @@ export const DISCIPLINAS_EXEMPLO = [
     modalidade: "Presencial",
     nome: "Processos e Fundamentos Históricos da Educação em Saúde",
     data: "26/09/2026",
+    cargaHoraria: "40h",
   },
   {
     modalidade: "Ao Vivo",
     nome: "Didática e Metodologia do Ensino para Profissionais da Área de Saúde",
     data: "24/10/2026",
+    cargaHoraria: "",
   },
 ];
 
 export const DISCIPLINAS_EAD_EXEMPLO = [
-  "Ética, Bioética e Legislação em Gestão Hospitalar",
+  {
+    nome: "Ética, Bioética e Legislação em Gestão Hospitalar",
+    cargaHoraria: "20h",
+  },
 ];

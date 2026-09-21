@@ -76,7 +76,51 @@ const casos = [
       j.tipo === "capacitacao" &&
       j.disciplinas.length === 3 &&
       j.disciplinas[2].data === null &&
-      j._meta.confianca === "alta",
+      j._meta.confianca === "alta" &&
+      // Sem coluna de carga horária na tabela, o campo vem null — não some do
+      // objeto nem vira string vazia. O modelo limpo cobre a ausência da
+      // coluna; o caso "carga-horaria" logo abaixo cobre a presença dela.
+      j.disciplinas.every((d) => d.cargaHoraria === null),
+  },
+  {
+    nome: "carga-horaria",
+    descricao: "coluna de carga horária nas duas tabelas de disciplina",
+    tabelas: [
+      DADOS_PADRAO,
+      [
+        ["Modalidade", "Disciplina", "Data", "Carga Horária"],
+        ["Ao Vivo", "TEÓRICA: Toxina Botulínica", "26/01/2027", "8h"],
+        // Célula em branco não pode virar string vazia — tem que ser null,
+        // igual a quando a coluna inteira está ausente.
+        ["Presencial", "PRÁTICA: Toxina Botulínica", "30/01/2027", ""],
+      ],
+      [
+        ["Disciplina EAD", "Carga Horária"],
+        ["Anatomofisiologia Avançada da Face", "20h"],
+        ["Biossegurança em Estética", ""],
+      ],
+    ],
+    espera: (j) =>
+      j.disciplinas.length === 4 &&
+      j.disciplinas[0].cargaHoraria === "8h" &&
+      j.disciplinas[1].cargaHoraria === null &&
+      j.disciplinas[2].cargaHoraria === "20h" &&
+      j.disciplinas[3].cargaHoraria === null,
+  },
+  {
+    nome: "carga-horaria-reordenada",
+    descricao: "carga horária antes das demais colunas, fora de ordem",
+    tabelas: [
+      DADOS_PADRAO,
+      [
+        ["Carga Horária", "Data", "Modalidade", "Disciplina"],
+        ["8h", "26/01/2027", "Ao Vivo", "TEÓRICA: Toxina Botulínica"],
+      ],
+    ],
+    espera: (j) =>
+      j.disciplinas.length === 1 &&
+      j.disciplinas[0].cargaHoraria === "8h" &&
+      j.disciplinas[0].nome === "TEÓRICA: Toxina Botulínica",
   },
   {
     nome: "colunas-reordenadas",

@@ -408,7 +408,7 @@ body {
 }
 
 .selo--ead {
-  background: var(--tinta-fraca);
+  background: var(--vermelho);
   color: var(--branco);
 }
 
@@ -429,6 +429,29 @@ body {
 
 .data-vazia {
   color: var(--tinta-fraca);
+}
+
+/* Carga horária ao lado do nome da disciplina — em uma pílula discreta, para
+   não competir com o nome, que é a informação principal da linha. Some por
+   inteiro quando não informada, em vez de deixar um espaço vazio. */
+.carga-horaria {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 1px 9px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--tinta-fraca);
+  white-space: nowrap;
+  background: var(--zebra);
+  border-radius: 999px;
+}
+
+.carga-horaria svg {
+  width: 11px;
+  height: 11px;
+  flex: none;
 }
 
 /* Disciplinas EAD não têm data porque ficam liberadas o curso inteiro; numa

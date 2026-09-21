@@ -24,7 +24,7 @@ import {
 import {
   CAMPOS,
   COLUNAS_DISCIPLINAS,
-  COLUNA_EAD,
+  COLUNAS_EAD,
   DISCIPLINAS_EAD_EXEMPLO,
   DISCIPLINAS_EXEMPLO,
   LINHAS_EM_BRANCO_DATA,
@@ -118,18 +118,23 @@ const tabelaDisciplinas = new Table({
   ],
 });
 
-// Tabela 3: disciplinas EAD. Uma coluna só — elas não têm data porque ficam
-// liberadas na plataforma o curso inteiro.
-const linhaEad = (indice, nome) =>
+// Tabela 3: disciplinas EAD. Nome e, opcionalmente, carga horária — elas não
+// têm data porque ficam liberadas na plataforma o curso inteiro.
+const linhaEad = (indice, dados) =>
   new TableRow({
-    children: [numero(indice + 1), celula(texto(nome ?? "", { color: CINZA }))],
+    children: [
+      numero(indice + 1),
+      ...COLUNAS_EAD.map((coluna) =>
+        celula(texto(dados?.[coluna.chave] ?? "", { color: CINZA })),
+      ),
+    ],
   });
 
 const tabelaEad = new Table({
   width: larguraTotal,
   rows: [
-    cabecalho(["#", COLUNA_EAD.rotulo]),
-    ...DISCIPLINAS_EAD_EXEMPLO.map((nome, i) => linhaEad(i, nome)),
+    cabecalho(["#", ...COLUNAS_EAD.map((c) => c.rotulo)]),
+    ...DISCIPLINAS_EAD_EXEMPLO.map((d, i) => linhaEad(i, d)),
     ...Array.from({ length: LINHAS_EM_BRANCO_EAD }, (_, i) =>
       linhaEad(DISCIPLINAS_EAD_EXEMPLO.length + i),
     ),
@@ -177,7 +182,9 @@ const documento = new Document({
           "Uma disciplina por linha, na ordem em que devem aparecer no cronograma. " +
             "A modalidade já vem preenchida como “Presencial” — troque só onde for " +
             "diferente. Valores aceitos: Presencial, Ao Vivo, Online ou Híbrido. " +
-            "Se a data ainda não estiver fechada, escreva “A definir”.",
+            "Se a data ainda não estiver fechada, escreva “A definir”. Carga horária " +
+            "é opcional — no formato “40h”; deixe em branco quando não tiver essa " +
+            "informação.",
           { size: 18, color: CINZA },
         ),
         texto(
@@ -194,8 +201,9 @@ const documento = new Document({
           children: [new TextRun({ text: TITULO_TABELA_EAD, bold: true })],
         }),
         texto(
-          "Só o nome. Estas disciplinas ficam liberadas na plataforma durante todo " +
-            "o curso, por isso não têm data e saem num bloco separado no cronograma.",
+          "O nome e, se quiser, a carga horária. Estas disciplinas ficam liberadas " +
+            "na plataforma durante todo o curso, por isso não têm data e saem num " +
+            "bloco separado no cronograma.",
           { size: 18, color: CINZA },
         ),
         new Paragraph({ text: "" }),

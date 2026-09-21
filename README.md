@@ -220,8 +220,12 @@ O modelo tem três tabelas:
 | Tabela | Conteúdo |
 |---|---|
 | **Dados do curso** | Um campo por linha (curso, turma, horários, endereço…), com o texto de ajuda junto do rótulo |
-| **Disciplinas com data** | `# · Modalidade · Disciplina · Data`, 22 linhas já criadas |
-| **Disciplinas EAD (sem data)** | `# · Disciplina EAD`, 11 linhas já criadas |
+| **Disciplinas com data** | `# · Modalidade · Disciplina · Data · Carga Horária`, 22 linhas já criadas |
+| **Disciplinas EAD (sem data)** | `# · Disciplina EAD · Carga Horária`, 11 linhas já criadas |
+
+Carga horária é opcional nas duas tabelas ("40h", por exemplo) — deixe em branco quando não
+tiver essa informação. Não vem preenchida a partir de um `.pdf`: o layout do Canva não traz
+esse dado em lugar nenhum, então só chega por digitação, no modelo ou na tela de revisão.
 
 Três coisas foram feitas para reduzir digitação, medidas no acervo:
 
@@ -288,6 +292,9 @@ As disciplinas EAD sem data saem da tabela cronológica e vão para um bloco pr�
 dentro do mesmo cartão. Elas não têm data porque ficam liberadas o curso inteiro; no meio das
 datadas só geravam uma coluna de traços.
 
+Quando a disciplina tem carga horária, ela aparece numa pílula discreta ao lado do nome — na
+tabela e no bloco EAD. Sem carga horária, a pílula simplesmente não é desenhada.
+
 **O PDF é nativo**, com texto selecionável e pesquisável — num cronograma isso importa, porque o
 aluno procura a data de uma disciplina com Ctrl+F. A folha sai em 1440×810 pontos, igual à dos
 arquivos do Canva, para que um cronograma novo e um antigo tenham o mesmo tamanho lado a lado.
@@ -317,9 +324,9 @@ PDF.
   },
   "avisos": ["Sua presença é fundamental em todas as aulas;"],
   "disciplinas": [
-    { "modalidade": "Presencial", "nome": "Segurança do Paciente", "data": "25/09/2027" },
-    { "modalidade": "EAD", "nome": "Ética, Bioética e Legislação", "data": null },
-    { "modalidade": null, "nome": "Estágio Centro Obstétrico", "data": "A definir" }
+    { "modalidade": "Presencial", "nome": "Segurança do Paciente", "data": "25/09/2027", "cargaHoraria": "35h" },
+    { "modalidade": "EAD", "nome": "Ética, Bioética e Legislação", "data": null, "cargaHoraria": null },
+    { "modalidade": null, "nome": "Estágio Centro Obstétrico", "data": "A definir", "cargaHoraria": null }
   ],
   "_meta": {
     "origem": "pdf",                   // ou "docx"
@@ -343,6 +350,10 @@ e não reduzem a confiança.
 O campo `avisos` da raiz traz os avisos como estavam no documento de origem, para referência. O
 que é impresso na página vem do boilerplate da família com os valores preenchidos, para que uma
 correção feita na revisão se propague para o texto.
+
+`disciplinas[].cargaHoraria` é sempre opcional e nunca entra em `camposNaoEncontrados` — é um
+dado por linha, não um campo do curso. Vem `null` quando ausente, tanto em disciplinas com data
+quanto EAD.
 
 ## Resultado sobre o acervo atual
 
