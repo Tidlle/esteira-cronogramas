@@ -102,8 +102,12 @@ for (const arquivo of arquivos) {
 
     return {
       paginas: paginas.length,
-      linhas: document.querySelectorAll("tbody tr").length,
-      itensEad: document.querySelectorAll(".bloco-ead__lista span").length,
+      // A tabela cronológica e a tabela do bloco EAD (.tabela--ead) são duas
+      // <table> distintas — contadas em separado para o diagnóstico continuar
+      // apontando em qual das duas uma disciplina eventualmente sumiu.
+      linhas: document.querySelectorAll(".tabela:not(.tabela--ead) tbody tr")
+        .length,
+      itensEad: document.querySelectorAll(".tabela--ead tbody tr").length,
       semNumero: [...document.querySelectorAll("[data-numero-pagina]")].filter(
         (e) => !e.textContent.trim(),
       ).length,

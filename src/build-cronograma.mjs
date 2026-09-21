@@ -257,21 +257,33 @@ function moldeCronograma(dados, familia, logoEmbutido) {
     </section>`;
 }
 
+/**
+ * Linha do bloco EAD — mesmo padrão visual da tabela cronológica (selo de
+ * modalidade + nome + carga horária), só sem coluna de data. É a mesma classe
+ * ".tabela" que dá a linha, o zebrado e a tipografia; a tabela recebe menos
+ * colunas via colgroup em vez de ganhar uma coluna de data cheia de traços.
+ */
+function montarLinhaEad(disciplina) {
+  return `<tr>
+              <td><span class="selo selo--ead">EAD</span></td>
+              <td class="celula-nome">${escapar(disciplina.nome)}${seloCargaHoraria(
+                disciplina.cargaHoraria,
+              )}</td>
+            </tr>`;
+}
+
 function montarBlocoEad(disciplinas) {
   if (!disciplinas.length) return "";
-  const itens = disciplinas
-    .map(
-      (d) =>
-        `<span>${escapar(d.nome)}${seloCargaHoraria(d.cargaHoraria)}</span>`,
-    )
-    .join("");
+  const linhas = disciplinas.map(montarLinhaEad).join("");
   return `
           <section class="bloco-ead">
-            <p class="bloco-ead__titulo">
-              <span class="selo selo--ead">EAD</span>
-              Disponíveis na plataforma durante todo o curso
-            </p>
-            <div class="bloco-ead__lista">${itens}</div>
+            <p class="bloco-ead__titulo">Disponíveis na plataforma durante todo o curso</p>
+            <table class="tabela tabela--ead">
+              <colgroup>
+                <col class="col-modalidade"><col>
+              </colgroup>
+              <tbody>${linhas}</tbody>
+            </table>
           </section>`;
 }
 

@@ -474,23 +474,20 @@ body {
   border-top: none;
 }
 
+/* Legenda da seção, no mesmo estilo do cabeçalho da tabela acima — o selo de
+   modalidade não mora mais aqui: cada disciplina tem o seu próprio, igual às
+   linhas da tabela cronológica. */
 .bloco-ead__titulo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--tinta-media);
+  color: var(--tinta-fraca);
 }
 
-.bloco-ead__lista {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3px 28px;
-  margin-top: 9px;
-  font-size: 14.5px;
-  line-height: 1.5;
-  color: var(--tinta-media);
+/* A tabela de EAD reaproveita a classe .tabela — mesma linha, mesmo zebrado,
+   mesma tipografia da tabela cronológica acima. Só perde a coluna de data
+   (via colgroup) e o <thead>, que aqui repetiria um cabeçalho desnecessário. */
+.tabela--ead {
+  margin-top: 6px;
 }
