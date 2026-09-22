@@ -416,6 +416,9 @@ botaoGerar.addEventListener("click", async () => {
 
     mostrarEtapa("resultado");
     link.click();
+    // Atualiza a lista agora, não só na próxima visita — quem clicar em
+    // "Novo cronograma" já encontra a geração que acabou de fazer no topo.
+    carregarHistorico();
   } catch (erro) {
     mostrarErro(revisaoErro, `Falha na comunicação com o servidor: ${erro.message}`);
   } finally {
@@ -430,6 +433,54 @@ function nomeDoPdf(cabecalho) {
   const simples = /filename="([^"]+)"/.exec(cabecalho ?? "");
   return simples ? simples[1] : "cronograma.pdf";
 }
+
+/* --- histórico ------------------------------------------------------------- */
+
+const historicoLinhas = $("#historico-linhas");
+const historicoVazio = $("#historico-vazio");
+const historicoAviso = $("#historico-aviso");
+
+function formatarDataHora(iso) {
+  const quando = new Date(iso);
+  if (Number.isNaN(quando.getTime())) return iso;
+  const data = quando.toLocaleDateString("pt-BR");
+  const hora = quando.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${data} ${hora}`;
+}
+
+async function carregarHistorico() {
+  let resposta;
+  try {
+    resposta = await fetch("/api/historico");
+  } catch {
+    // Sem conexão com o servidor: mantém o que já estava na tela em vez de
+    // esvaziar a lista por causa de uma falha passageira de rede.
+    return;
+  }
+  if (!resposta.ok) return;
+
+  const { persistente, itens } = await resposta.json();
+
+  historicoAviso.hidden = persistente !== false;
+
+  historicoLinhas.innerHTML = itens
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapar(item.curso ?? "—")}</td>
+          <td>${escapar(item.turma ?? "—")}</td>
+          <td>${formatarDataHora(item.geradoEm)}</td>
+        </tr>`,
+    )
+    .join("");
+
+  historicoVazio.hidden = itens.length > 0;
+}
+
+carregarHistorico();
 
 /* --- navegação ------------------------------------------------------------- */
 

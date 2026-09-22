@@ -167,6 +167,16 @@ try {
     pdf.headers.get("content-disposition") ?? "",
   );
 
+  // --- histórico registra a geração que acabou de acontecer
+  const historico = await (await fetch(`${BASE}/api/historico`)).json();
+  checar(
+    typeof historico.persistente === "boolean" &&
+      Array.isArray(historico.itens) &&
+      historico.itens.some((item) => item.curso === dados.curso),
+    "GET /api/historico lista a geração feita em /api/gerar",
+    JSON.stringify(historico.itens.slice(0, 2)),
+  );
+
   // --- edição na revisão chega no PDF
   const editado = structuredClone(dados);
   editado.curso = "CURSO EDITADO NA REVISÃO";

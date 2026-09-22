@@ -5,6 +5,8 @@ import { pathToFileURL } from "node:url";
 
 import { chromium } from "playwright";
 
+import { emServerless } from "./ambiente.mjs";
+
 // O acervo do Canva usa páginas de 1440x810 pontos. O template é desenhado em
 // 1440x810 pixels de CSS, que a 96dpi dariam só 1080x608 pontos — a mesma
 // proporção 16:9, mas um arquivo fisicamente menor. A escala de 4/3 corrige
@@ -20,20 +22,14 @@ const ESPERA_MS = 20000;
 
 let navegadorCompartilhado = null;
 
-// Em serverless não existe o Chromium que o `playwright install` baixa: o
-// pacote de browsers não vai no deploy, e o sistema de arquivos é somente
-// leitura fora de /tmp. O @sparticuz/chromium resolve isso trazendo um binário
-// próprio, compilado para o ambiente da AWS Lambda, que é onde a Vercel roda.
-const EM_SERVERLESS = Boolean(
-  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME,
-);
-
 /**
  * Como abrir o Chromium no ambiente atual. Local: o navegador que o Playwright
- * instalou. Serverless: o binário embutido no @sparticuz/chromium.
+ * instalou. Serverless: o binário embutido no @sparticuz/chromium — não
+ * existe o Chromium que o `playwright install` baixa (o pacote de browsers
+ * não vai no deploy, e o sistema de arquivos é somente leitura fora de /tmp).
  */
 async function opcoesDeLancamento() {
-  if (!EM_SERVERLESS) return {};
+  if (!emServerless()) return {};
 
   // Importado só aqui: são uns 50 MB que a execução local não precisa carregar.
   const { default: chromiumServerless } = await import("@sparticuz/chromium");

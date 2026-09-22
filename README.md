@@ -120,10 +120,38 @@ CMD ["node", "server.mjs"]
 | `GET /api/modelo` | Baixa o `MODELO-CRONOGRAMA.docx` |
 | `POST /api/extrair` | Recebe o arquivo (campo `arquivo`, multipart) e devolve o JSON extraído |
 | `POST /api/previa` | Recebe o JSON e devolve o HTML do cronograma |
-| `POST /api/gerar` | Recebe o JSON e devolve o PDF |
+| `POST /api/gerar` | Recebe o JSON e devolve o PDF, e registra a geração no histórico |
+| `GET /api/historico` | Devolve os últimos cronogramas gerados |
 
 Limite de 25 MB por arquivo. Os uploads passam por um arquivo temporário e são apagados logo
-depois; nada é guardado no servidor.
+depois; nada do conteúdo do arquivo é guardado no servidor — só o registro de que um PDF foi
+gerado entra no histórico (ver seção abaixo).
+
+## Histórico de gerações
+
+A página principal mostra os cronogramas gerados recentemente — curso, turma e data/hora —,
+alimentada por `POST /api/gerar`: toda geração bem-sucedida grava uma linha, e a lista atualiza
+sozinha na tela assim que o download termina.
+
+Guardado em [src/historico.mjs](src/historico.mjs), num arquivo JSON simples (sem banco — seria
+peso demais para o que é: curso, turma, tipo e data/hora de cada geração, no máximo 200
+registros, os mais antigos saindo conforme novos entram). Nunca impede a geração do PDF: uma
+falha ao gravar fica só no console do servidor.
+
+**Onde o arquivo mora depende de como o sistema está rodando:**
+
+| Execução | Caminho | Sobrevive a… |
+|---|---|---|
+| `npm start` / container | `dados/historico.json`, dentro do projeto | reinícios do processo, deploys |
+| Vercel (serverless) | `/tmp`, fora do projeto | só a instância atual — some a qualquer momento |
+
+Na Vercel o sistema de arquivos do projeto é somente leitura fora de `/tmp`, e `/tmp` não é
+compartilhado nem garantido entre invocações — pode sumir num redeploy, numa instância nova por
+causa de tráfego, ou só por ter ficado tempo parado. A interface avisa disso: quando
+`GET /api/historico` responde `persistente: false`, aparece um aviso discreto ao lado do título
+da lista. Para um histórico de verdade, confiável entre deploys, o caminho é a publicação em
+container (seção "Publicar" acima), que não tem essa restrição — o arquivo fica no disco do
+próprio container, como no `npm start`.
 
 ## Linha de comando
 
@@ -169,11 +197,15 @@ Todos saem com código 1 em caso de falha.
 ## Estrutura
 
 ```
-server.mjs               servidor Express
+server.mjs               execução local: importa src/app.mjs e escuta numa porta
+api/index.mjs            execução serverless: entrega src/app.mjs ao runtime da Vercel
 public/                  interface (envio → revisão → resultado)
 src/
+  app.mjs                rotas Express — o mesmo app nos dois formatos de execução
+  ambiente.mjs            detecção de serverless, usada por generate-pdf.mjs e historico.mjs
   build-cronograma.mjs   dados + boilerplate + template → HTML
   generate-pdf.mjs       HTML → PDF
+  historico.mjs          registro de gerações (curso, turma, data/hora)
   extract/
     index.mjs            despacha pela extensão do arquivo
     pdf.mjs              extrator de PDF (posicional)
@@ -186,6 +218,7 @@ templates/
 scripts/                 CLIs de extração, construção, geração, testes
 assets/                  logo institucional
 modelos/                 modelo .docx entregue à equipe
+dados/                   historico.json (não versionado — ver "Histórico de gerações")
 saida/                   resultados gerados (não versionado)
 ```
 
@@ -381,8 +414,9 @@ quanto EAD.
 
 ## Limitações conhecidas
 
-- **Sem autenticação e sem histórico.** O sistema é de uso interno e não guarda nada: gerou,
-  baixou, acabou. Publicar para fora exige pôr um login na frente.
+- **Sem autenticação.** O sistema é de uso interno; publicar para fora exige pôr um login na
+  frente. O que fica guardado hoje é só o registro de curso/turma/data de cada geração (ver
+  "Histórico de gerações") — o conteúdo dos arquivos enviados não é retido.
 - **PDFs sem camada de texto** (design exportado como imagem) são detectados e devolvem
   `confianca: "nenhuma"` com um aviso, para preenchimento manual na revisão. Nenhum dos 21
   arquivos do acervo atual cai nesse caso.

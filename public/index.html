@@ -34,6 +34,27 @@
 
     <div id="envio-erro" class="alerta alerta--erro" hidden></div>
     <div id="envio-carregando" class="carregando" hidden>Lendo o arquivo…</div>
+
+    <section class="historico">
+      <div class="historico__topo">
+        <h2>Cronogramas gerados recentemente</h2>
+        <span id="historico-aviso" class="historico__aviso" hidden
+          title="Neste ambiente o histórico fica só na instância atual — pode ficar vazio depois de um tempo parado ou num redeploy.">
+          histórico local a esta instância
+        </span>
+      </div>
+      <table class="historico__tabela">
+        <thead>
+          <tr>
+            <th>Curso</th>
+            <th class="col-turma">Turma</th>
+            <th class="col-quando">Gerado em</th>
+          </tr>
+        </thead>
+        <tbody id="historico-linhas"></tbody>
+      </table>
+      <p id="historico-vazio" class="historico__vazio">Nenhum cronograma gerado ainda.</p>
+    </section>
   </section>
 
   <!-- 2. revisão ---------------------------------------------------------- -->

@@ -10,9 +10,11 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import multer from "multer";
 
+import { emServerless } from "./ambiente.mjs";
 import { construirHtml } from "./build-cronograma.mjs";
 import { extrair } from "./extract/index.mjs";
 import { gerarPdfDeHtml, nomeDoArquivo } from "./generate-pdf.mjs";
+import { listarHistorico, persistente, registrarGeracao } from "./historico.mjs";
 
 const RAIZ = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -21,9 +23,8 @@ const EXTENSOES = new Set([".pdf", ".docx"]);
 // Em serverless o corpo da requisição é limitado pela plataforma — na Vercel,
 // 4,5 MB — e o upload falharia com um erro genérico antes de chegar aqui. O
 // limite fica um pouco abaixo disso para a recusa vir com mensagem explicada.
-const EM_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const TAMANHO_MAXIMO = Number(
-  process.env.TAMANHO_MAXIMO_MB ?? (EM_SERVERLESS ? 4 : 25),
+  process.env.TAMANHO_MAXIMO_MB ?? (emServerless() ? 4 : 25),
 ) * 1024 * 1024;
 
 export const app = express();
@@ -126,8 +127,15 @@ app.post(
       return;
     }
 
-    const { pdf, avisos } = await gerarPdfDeHtml(html);
+    const { pdf, paginas, avisos } = await gerarPdfDeHtml(html);
     const nome = nomeDoArquivo(dados);
+
+    registrarGeracao({
+      curso: dados.curso,
+      turma: dados.turma?.codigo,
+      tipo: dados.tipo,
+      paginas,
+    });
 
     res.setHeader("Content-Type", "application/pdf");
     // encodeURIComponent no filename* preserva acentos em qualquer navegador.
@@ -139,6 +147,13 @@ app.post(
       res.setHeader("X-Avisos", encodeURIComponent(avisos.join(" | ")));
     }
     res.send(pdf);
+  }),
+);
+
+app.get(
+  "/api/historico",
+  rota(async (req, res) => {
+    res.json({ persistente: persistente(), itens: listarHistorico(30) });
   }),
 );
 
