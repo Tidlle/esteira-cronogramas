@@ -118,7 +118,25 @@ function camposDoTexto(dados) {
     capacidadeMaxima: v.capacidadeMaxima,
     limiteFaltas: v.limiteFaltas,
     intervaloFrase: v.intervalo ? `, com ${v.intervalo} de intervalo` : "",
+    // Vem da tabela de disciplinas, não da variável horarioAoVivo: um curso
+    // pode ter o horário preenchido no .docx sem nenhuma disciplina "Ao Vivo"
+    // de fato (ou vice-versa), e o card/avisos precisam responder ao que
+    // realmente está na grade, não a um campo de formulário desalinhado dela.
+    temAoVivo: (dados.disciplinas ?? []).some((d) => d.modalidade === "Ao Vivo"),
   };
+}
+
+/**
+ * Um item (card ou aviso) com "condicao" só aparece quando aquele campo é
+ * verdadeiro; com "condicaoAusente", só quando é falso. As duas permitem
+ * declarar um par de itens mutuamente exclusivos — o card ou aviso que fala
+ * de um tema quando ele existe, e o que fala de outro quando não existe —
+ * sem que o restante do template precise saber que existe uma alternativa.
+ */
+function atendeCondicao(item, campos) {
+  if (item.condicao && !campos[item.condicao]) return false;
+  if (item.condicaoAusente && campos[item.condicaoAusente]) return false;
+  return true;
 }
 
 function montarCabecalho(dados, familia, etiqueta, logoEmbutido) {
@@ -157,8 +175,8 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
 
   // Um cartão condicionado a um campo vazio sai fora, em vez de aparecer com
   // um espaço em branco no lugar do valor.
-  const cartoes = (familia.cards ?? []).filter(
-    (cartao) => !cartao.condicao || campos[cartao.condicao],
+  const cartoes = (familia.cards ?? []).filter((cartao) =>
+    atendeCondicao(cartao, campos),
   );
 
   const htmlCartoes = cartoes
@@ -172,8 +190,13 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
     )
     .join("");
 
+  // Cada aviso pode ser um texto fixo (string) ou um objeto com condição —
+  // o mesmo mecanismo dos cartões, para um aviso poder trocar de assunto
+  // (não só sumir) conforme o curso.
   const avisos = (familia.avisos ?? [])
-    .map((aviso) => `<li>${preencher(aviso, campos)}</li>`)
+    .map((aviso) => (typeof aviso === "string" ? { texto: aviso } : aviso))
+    .filter((aviso) => atendeCondicao(aviso, campos))
+    .map((aviso) => `<li>${preencher(aviso.texto, campos)}</li>`)
     .join("");
 
   return `

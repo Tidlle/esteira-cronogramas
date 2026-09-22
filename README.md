@@ -265,9 +265,23 @@ entrada em cada.
 
 Hoje existem duas: `pos-graduacao` e `capacitacao`.
 
-Um card pode ter `condicao` apontando para um campo: some quando o campo está vazio. É assim que
-o card de "Aulas ao vivo" só aparece nos cursos que têm esse horário, e o de "Estágios" só nos
-que têm estágio na grade.
+Um card ou aviso pode ter `condicao` apontando para um campo: só aparece quando o campo é
+verdadeiro. `condicaoAusente` é o inverso — só aparece quando o campo é falso. As duas juntas
+declaram um **par mutuamente exclusivo**: em `capacitacao`, o card "Aulas ao vivo" (`condicao:
+"temAoVivo"`) e o card "Presença" (`condicaoAusente: "temAoVivo"`) nunca aparecem ao mesmo
+tempo — um curso sem nenhuma disciplina "Ao Vivo" na grade nunca fica com um card falando de
+aulas ao vivo, mas também nunca fica com um buraco no lugar dele. O mesmo mecanismo se aplica
+aos avisos da caixa "Informações importantes", que aceitam string simples (sempre aparece) ou
+`{ texto, condicao?, condicaoAusente? }`.
+
+`temAoVivo` é derivado de `dados.disciplinas` — verdadeiro quando existe ao menos uma disciplina
+com modalidade "Ao Vivo" na grade —, não da variável `horarioAoVivo` do formulário. São coisas
+diferentes de propósito: alguém pode preencher o horário no `.docx` sem que o curso tenha de
+fato uma aula ao vivo na grade (ou vice-versa), e é a grade que decide o que aparece na página,
+não o formulário.
+
+O card de "Estágios" (`pos-graduacao`) usa o mesmo `condicao`, mas sem par — simplesmente some
+quando não há estágio, porque não existe um tema substituto natural para esse card.
 
 ## Template e geração do PDF
 

@@ -6,9 +6,17 @@
     "",
     "Campos disponíveis: {curso} {turma} {diaSemana} {encontros}",
     "{horarioPresencial} {horarioAoVivo} {intervalo} {endereco}",
-    "{capacidadeMaxima} {limiteFaltas} {intervaloFrase}",
+    "{capacidadeMaxima} {limiteFaltas} {intervaloFrase} {temAoVivo}",
     "",
-    "Um card com \"condicao\" só aparece quando aquele campo tem valor.",
+    "Um card ou aviso com \"condicao\" só aparece quando aquele campo é",
+    "verdadeiro; com \"condicaoAusente\", só quando é falso. As duas permitem",
+    "declarar um par mutuamente exclusivo — o card de 'Aulas ao vivo' e o de",
+    "'Presença' da família capacitacao são um exemplo: nunca aparecem juntos,",
+    "sempre um dos dois. Um aviso aceita ser só uma string (sempre aparece)",
+    "ou um objeto { texto, condicao?, condicaoAusente? }.",
+    "temAoVivo vem de dados.disciplinas, não de um campo do formulário — é",
+    "verdadeiro quando existe pelo menos uma disciplina com modalidade",
+    "'Ao Vivo' na grade, não quando o horário foi só preenchido no .docx.",
     "Para adicionar uma família nova, acrescente uma entrada aqui e outra em",
     "FAMILIAS, em src/extract/layouts.mjs."
   ],
@@ -68,8 +76,14 @@
       {
         "icone": "aovivo",
         "titulo": "Aulas ao vivo",
-        "condicao": "horarioAoVivo",
+        "condicao": "temAoVivo",
         "texto": "Aulas online das {horarioAoVivo}, para preparação teórica antes da prática. Ficam gravadas para revisão posterior."
+      },
+      {
+        "icone": "presenca",
+        "titulo": "Presença",
+        "condicaoAusente": "temAoVivo",
+        "texto": "A ausência na aula teórica acarreta o impedimento de participação na aula prática."
       },
       {
         "icone": "hospital",
@@ -88,10 +102,20 @@
       }
     ],
     "avisos": [
-      "Sua presença é fundamental em todas as aulas, especialmente nas ao vivo, que preparam você para a prática;",
+      {
+        "texto": "Sua presença é fundamental em todas as aulas, especialmente nas ao vivo, que preparam você para a prática;",
+        "condicao": "temAoVivo"
+      },
+      {
+        "texto": "Sua presença é fundamental em todas as aulas;",
+        "condicaoAusente": "temAoVivo"
+      },
       "Aulas práticas perdidas devem ser remarcadas conforme disponibilidade da instituição;",
       "As disciplinas EAD são obrigatórias e fazem parte do seu cronograma;",
-      "Todas as aulas ao vivo ficam gravadas e disponíveis para acesso posterior;",
+      {
+        "texto": "Todas as aulas ao vivo ficam gravadas e disponíveis para acesso posterior;",
+        "condicao": "temAoVivo"
+      },
       "A capacidade máxima permitida na turma é de {capacidadeMaxima} alunos."
     ]
   }
