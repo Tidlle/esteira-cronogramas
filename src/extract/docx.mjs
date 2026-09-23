@@ -3,7 +3,12 @@ import fs from "node:fs";
 import { XMLParser } from "fast-xml-parser";
 import JSZip from "jszip";
 
-import { detectarFamilia, normalizarModalidade, opcionaisDaFamilia } from "./layouts.mjs";
+import {
+  detectarFamilia,
+  normalizarModalidade,
+  normalizarTipoAula,
+  opcionaisDaFamilia,
+} from "./layouts.mjs";
 import {
   CAMPOS,
   COLUNAS_DISCIPLINAS,
@@ -258,6 +263,7 @@ export async function extrairDeDocx(caminho) {
     const indiceDe = (chave) =>
       cabecalho.findIndex((coluna) => coluna?.chave === chave);
     const iModalidade = indiceDe("modalidade");
+    const iTipoAula = indiceDe("tipoAula");
     const iNome = indiceDe("nome");
     const iData = indiceDe("data");
     const iCargaHoraria = indiceDe("cargaHoraria");
@@ -275,6 +281,15 @@ export async function extrairDeDocx(caminho) {
         );
       }
 
+      const tipoAulaBruto = iTipoAula >= 0 ? linha[iTipoAula] : "";
+      const tipoAula = normalizarTipoAula(tipoAulaBruto ?? "");
+      if (tipoAulaBruto?.trim() && !tipoAula) {
+        avisos.push(
+          `Tipo de aula "${tipoAulaBruto.trim()}" não reconhecido — use ` +
+            `"Teórica" ou "Prática" — na disciplina "${nome}".`,
+        );
+      }
+
       const dataBruta = (iData >= 0 ? linha[iData] : "")?.trim() ?? "";
       const data = /a\s*definir/i.test(dataBruta)
         ? "A definir"
@@ -283,7 +298,7 @@ export async function extrairDeDocx(caminho) {
       const cargaHoraria =
         (iCargaHoraria >= 0 ? linha[iCargaHoraria] : "")?.trim() || null;
 
-      listaDisciplinas.push({ modalidade, nome, data, cargaHoraria });
+      listaDisciplinas.push({ modalidade, tipoAula, nome, data, cargaHoraria });
     }
   } else if (!tabelaEad) {
     avisos.push(
@@ -295,7 +310,15 @@ export async function extrairDeDocx(caminho) {
   // As EAD entram depois das datadas, que é a ordem em que saem no cronograma.
   if (tabelaEad) {
     for (const { nome, cargaHoraria } of lerTabelaEad(tabelaEad)) {
-      listaDisciplinas.push({ modalidade: "EAD", nome, data: null, cargaHoraria });
+      listaDisciplinas.push({
+        modalidade: "EAD",
+        // A tabela EAD não pergunta tipo de aula — é conteúdo assíncrono, a
+        // distinção teórica/prática não se aplica do mesmo jeito.
+        tipoAula: null,
+        nome,
+        data: null,
+        cargaHoraria,
+      });
     }
   }
 

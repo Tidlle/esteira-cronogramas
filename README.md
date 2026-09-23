@@ -269,12 +269,20 @@ O modelo tem três tabelas:
 | Tabela | Conteúdo |
 |---|---|
 | **Dados do curso** | Um campo por linha (curso, turma, horários, endereço…), com o texto de ajuda junto do rótulo |
-| **Disciplinas com data** | `# · Modalidade · Disciplina · Data · Carga Horária`, 22 linhas já criadas |
+| **Disciplinas com data** | `# · Modalidade · Tipo de Aula · Disciplina · Data · Carga Horária`, 23 linhas já criadas |
 | **Disciplinas EAD (sem data)** | `# · Disciplina EAD · Carga Horária`, 11 linhas já criadas |
 
 Carga horária é opcional nas duas tabelas ("40h", por exemplo) — deixe em branco quando não
-tiver essa informação. Não vem preenchida a partir de um `.pdf`: o layout do Canva não traz
-esse dado em lugar nenhum, então só chega por digitação, no modelo ou na tela de revisão.
+tiver essa informação. Tipo de aula é opcional só na tabela com data ("Teórica" ou "Prática" —
+qualquer outro valor vira aviso na revisão, não erro), e não existe na tabela EAD: conteúdo
+assíncrono não se encaixa nessa distinção do mesmo jeito.
+
+Nenhum dos dois vem preenchido a partir de um `.pdf` do Canva por padrão — o layout não reserva
+coluna para eles —, mas o tipo de aula tem uma exceção: boa parte das disciplinas de
+capacitação já traz "TEÓRICA:" ou "PRÁTICA:" no próprio nome ("TEÓRICA: Harmonização Facial
+Full Face"), e o extrator de PDF aproveita esse sinal — captura no campo e remove o prefixo do
+nome, para não ficar redundante. Carga horária não tem esse tipo de sinal em lugar nenhum da
+origem, então só chega por digitação, no modelo ou na tela de revisão.
 
 Três coisas foram feitas para reduzir digitação, medidas no acervo:
 
@@ -358,6 +366,13 @@ datadas só geravam uma coluna de traços.
 Quando a disciplina tem carga horária, ela aparece numa pílula discreta ao lado do nome — na
 tabela e no bloco EAD. Sem carga horária, a pílula simplesmente não é desenhada.
 
+Quando a disciplina tem tipo de aula, o selo aparece na mesma célula do selo de modalidade, ao
+lado dele — "Presencial" + "Teórica", por exemplo. Cinza, e não vermelho como os selos de
+modalidade: os dois num vermelho igual se misturariam visualmente numa linha só, como se fossem
+a mesma categoria de dado. A coluna de modalidade (190px) foi medida para caber o par mais
+largo do acervo — Presencial + Teórica, ~167px — sem quebrar linha; o `flex-wrap` continua
+ativo como rede de segurança para uma combinação mais larga que apareça no futuro.
+
 **O PDF é nativo**, com texto selecionável e pesquisável — num cronograma isso importa, porque o
 aluno procura a data de uma disciplina com Ctrl+F. A folha sai em 1440×810 pontos, igual à dos
 arquivos do Canva, para que um cronograma novo e um antigo tenham o mesmo tamanho lado a lado.
@@ -387,9 +402,10 @@ PDF.
   },
   "avisos": ["Sua presença é fundamental em todas as aulas;"],
   "disciplinas": [
-    { "modalidade": "Presencial", "nome": "Segurança do Paciente", "data": "25/09/2027", "cargaHoraria": "35h" },
-    { "modalidade": "EAD", "nome": "Ética, Bioética e Legislação", "data": null, "cargaHoraria": null },
-    { "modalidade": null, "nome": "Estágio Centro Obstétrico", "data": "A definir", "cargaHoraria": null }
+    { "modalidade": "Ao Vivo", "tipoAula": "Teórica", "nome": "Harmonização Facial Full Face", "data": "26/01/2027", "cargaHoraria": "8h" },
+    { "modalidade": "Presencial", "tipoAula": "Prática", "nome": "Harmonização Facial Full Face", "data": "30/01/2027", "cargaHoraria": "8h" },
+    { "modalidade": "EAD", "tipoAula": null, "nome": "Ética, Bioética e Legislação", "data": null, "cargaHoraria": null },
+    { "modalidade": null, "tipoAula": null, "nome": "Estágio Centro Obstétrico", "data": "A definir", "cargaHoraria": null }
   ],
   "_meta": {
     "origem": "pdf",                   // ou "docx"
@@ -414,9 +430,11 @@ O campo `avisos` da raiz traz os avisos como estavam no documento de origem, par
 que é impresso na página vem do boilerplate da família com os valores preenchidos, para que uma
 correção feita na revisão se propague para o texto.
 
-`disciplinas[].cargaHoraria` é sempre opcional e nunca entra em `camposNaoEncontrados` — é um
-dado por linha, não um campo do curso. Vem `null` quando ausente, tanto em disciplinas com data
-quanto EAD.
+`disciplinas[].cargaHoraria` e `disciplinas[].tipoAula` são sempre opcionais e nunca entram em
+`camposNaoEncontrados` — são dados por linha, não campos do curso. Vêm `null` quando ausentes,
+tanto em disciplinas com data quanto EAD. `tipoAula` só aceita exatamente `"Teórica"` ou
+`"Prática"` (ver `normalizarTipoAula` em [src/extract/layouts.mjs](src/extract/layouts.mjs));
+qualquer outro valor no `.docx` vira aviso na revisão em vez de ser aceito literalmente.
 
 ## Resultado sobre o acervo atual
 

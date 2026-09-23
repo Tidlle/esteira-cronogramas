@@ -184,7 +184,8 @@ const documento = new Document({
             "diferente. Valores aceitos: Presencial, Ao Vivo, Online ou Híbrido. " +
             "Se a data ainda não estiver fechada, escreva “A definir”. Carga horária " +
             "é opcional — no formato “40h”; deixe em branco quando não tiver essa " +
-            "informação.",
+            "informação. Tipo de aula também é opcional — “Teórica” ou “Prática”; " +
+            "deixe em branco quando a disciplina não se encaixar nessa distinção.",
           { size: 18, color: CINZA },
         ),
         texto(

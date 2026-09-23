@@ -77,10 +77,11 @@ const casos = [
       j.disciplinas.length === 3 &&
       j.disciplinas[2].data === null &&
       j._meta.confianca === "alta" &&
-      // Sem coluna de carga horária na tabela, o campo vem null — não some do
-      // objeto nem vira string vazia. O modelo limpo cobre a ausência da
-      // coluna; o caso "carga-horaria" logo abaixo cobre a presença dela.
-      j.disciplinas.every((d) => d.cargaHoraria === null),
+      // Sem coluna de carga horária/tipo de aula na tabela, os campos vêm
+      // null — não somem do objeto nem viram string vazia. O modelo limpo
+      // cobre a ausência das colunas; os casos "carga-horaria" e
+      // "tipo-aula" logo abaixo cobrem a presença delas.
+      j.disciplinas.every((d) => d.cargaHoraria === null && d.tipoAula === null),
   },
   {
     nome: "carga-horaria",
@@ -121,6 +122,41 @@ const casos = [
       j.disciplinas.length === 1 &&
       j.disciplinas[0].cargaHoraria === "8h" &&
       j.disciplinas[0].nome === "TEÓRICA: Toxina Botulínica",
+  },
+  {
+    nome: "tipo-aula",
+    descricao: "coluna de tipo de aula, presente e ausente",
+    tabelas: [
+      DADOS_PADRAO,
+      [
+        ["Modalidade", "Tipo de Aula", "Disciplina", "Data"],
+        ["Ao Vivo", "Teórica", "Toxina Botulínica", "26/01/2027"],
+        ["Presencial", "prática", "Toxina Botulínica", "30/01/2027"],
+        // Célula em branco não pode virar string vazia — tem que ser null.
+        ["Presencial", "", "Segurança do Paciente", "25/09/2027"],
+      ],
+    ],
+    espera: (j) =>
+      j.disciplinas.length === 3 &&
+      j.disciplinas[0].tipoAula === "Teórica" &&
+      // Minúscula sem acento também é aceita — mesma tolerância da modalidade.
+      j.disciplinas[1].tipoAula === "Prática" &&
+      j.disciplinas[2].tipoAula === null,
+  },
+  {
+    nome: "tipo-aula-invalido",
+    descricao: "valor de tipo de aula fora do vocabulário gera aviso, não erro",
+    tabelas: [
+      DADOS_PADRAO,
+      [
+        ["Modalidade", "Tipo de Aula", "Disciplina", "Data"],
+        ["Presencial", "Revisão", "Toxina Botulínica", "30/01/2027"],
+      ],
+    ],
+    espera: (j) =>
+      j.disciplinas.length === 1 &&
+      j.disciplinas[0].tipoAula === null &&
+      j._meta.avisos.some((a) => a.includes("Revisão")),
   },
   {
     nome: "colunas-reordenadas",

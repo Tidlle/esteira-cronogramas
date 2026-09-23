@@ -89,6 +89,33 @@ function classeDoSelo(modalidade) {
   }
 }
 
+// Cinza, não vermelho: o tipo de aula é informação secundária à modalidade, e
+// usar a mesma cor das duas faria os dois selos de uma linha (ex.: "Ao Vivo" +
+// "Teórica") se misturarem visualmente, como se fossem a mesma categoria.
+function classeDoSeloTipoAula(tipoAula) {
+  return tipoAula === "Prática" ? "selo--pratica" : "selo--teorica";
+}
+
+/**
+ * O selo de modalidade e, quando existe, o de tipo de aula logo ao lado — a
+ * mesma célula da tabela nas duas famílias de linha (com data e EAD).
+ */
+function montarSelosModalidade(disciplina) {
+  const selos = [
+    `<span class="selo ${classeDoSelo(disciplina.modalidade)}">${escapar(
+      disciplina.modalidade ?? "A definir",
+    )}</span>`,
+  ];
+  if (disciplina.tipoAula) {
+    selos.push(
+      `<span class="selo ${classeDoSeloTipoAula(disciplina.tipoAula)}">${escapar(
+        disciplina.tipoAula,
+      )}</span>`,
+    );
+  }
+  return selos.join("");
+}
+
 /** Dia da semana de uma data dd/mm/aaaa, para conferir se caiu no dia da turma. */
 function diaDaSemana(data) {
   const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data ?? "");
@@ -233,9 +260,7 @@ function montarLinha(disciplina) {
     : '<span class="data-vazia">—</span>';
 
   return `<tr>
-              <td><span class="selo ${classeDoSelo(disciplina.modalidade)}">${escapar(
-                disciplina.modalidade ?? "A definir",
-              )}</span></td>
+              <td class="celula-modalidade">${montarSelosModalidade(disciplina)}</td>
               <td class="celula-nome">${escapar(disciplina.nome)}${seloCargaHoraria(
                 disciplina.cargaHoraria,
               )}</td>
@@ -288,7 +313,7 @@ function moldeCronograma(dados, familia, logoEmbutido) {
  */
 function montarLinhaEad(disciplina) {
   return `<tr>
-              <td><span class="selo selo--ead">EAD</span></td>
+              <td class="celula-modalidade">${montarSelosModalidade(disciplina)}</td>
               <td class="celula-nome">${escapar(disciplina.nome)}${seloCargaHoraria(
                 disciplina.cargaHoraria,
               )}</td>

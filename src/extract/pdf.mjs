@@ -8,12 +8,14 @@ import {
   RE_A_DEFINIR,
   RE_DATA,
   RE_HORARIO,
+  RE_PREFIXO_TIPO_AULA,
   RE_SEM_DATA,
   RE_TURMA,
   VARIAVEIS,
   detectarFamilia,
   formatarHorario,
   normalizarModalidade,
+  normalizarTipoAula,
   opcionaisDaFamilia,
 } from "./layouts.mjs";
 
@@ -175,6 +177,21 @@ function separarDataEmAberto(nome) {
 }
 
 /**
+ * Separa o tipo de aula de um prefixo "TEÓRICA:"/"PRÁTICA:" grudado no início
+ * do nome — convenção real de boa parte do acervo de capacitação. O prefixo
+ * sai do nome depois de capturado: mantê-lo ali ficaria redundante com o
+ * próprio campo.
+ */
+function separarTipoAula(nome) {
+  const prefixo = RE_PREFIXO_TIPO_AULA.exec(nome);
+  if (!prefixo) return { nome, tipoAula: null };
+  return {
+    nome: nome.replace(RE_PREFIXO_TIPO_AULA, "").trim(),
+    tipoAula: normalizarTipoAula(prefixo[1]),
+  };
+}
+
+/**
  * Reconstrói a tabela de disciplinas de uma página.
  *
  * A estratégia é ancorar nas células de modalidade ("Presencial", "EAD",
@@ -272,12 +289,14 @@ function extrairDisciplinas(pagina) {
 
       const bruto = juntar(partesNome);
       const comData = separarDataEmAberto(bruto);
+      const comTipo = separarTipoAula(comData.nome);
       const dataExplicita = partesData.find((p) => RE_DATA.test(p.texto));
 
       disciplinas.push({
         modalidade: ancora.modalidade,
-        nome: comData.nome,
+        nome: comTipo.nome,
         data: dataExplicita ? dataExplicita.texto : comData.data,
+        tipoAula: comTipo.tipoAula,
         // O layout do Canva não traz carga horária em lugar nenhum da tabela;
         // não há âncora para extrair. O campo existe no schema (fica null) só
         // por consistência com a origem .docx, que aceita esse dado.
@@ -301,11 +320,13 @@ function extrairDisciplinas(pagina) {
     const bruto = juntar(partes);
     const comData = separarDataEmAberto(bruto);
     if (!comData.data || !comData.nome) continue;
+    const comTipo = separarTipoAula(comData.nome);
 
     disciplinas.push({
       modalidade: null,
-      nome: comData.nome,
+      nome: comTipo.nome,
       data: comData.data,
+      tipoAula: comTipo.tipoAula,
       cargaHoraria: null,
     });
     for (const item of partes) consumidos.add(item);

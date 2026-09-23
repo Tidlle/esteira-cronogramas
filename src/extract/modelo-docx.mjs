@@ -105,14 +105,27 @@ export const COLUNA_CARGA_HORARIA = {
   sinonimos: ["carga horaria", "horas", "ch", "carga"],
 };
 
+// Tipo de aula é opcional e independente da modalidade — uma disciplina "Ao
+// Vivo" pode ser a teórica de um par, e a "Presencial" seguinte, a prática
+// correspondente. Só os dois valores abaixo são aceitos (ver normalizarTipoAula
+// em layouts.mjs); qualquer outra coisa gera aviso na revisão, sem travar a
+// extração.
+export const COLUNA_TIPO_AULA = {
+  chave: "tipoAula",
+  rotulo: "Tipo de Aula",
+  sinonimos: ["tipo de aula", "teorica ou pratica", "teoria ou pratica"],
+};
+
 // Cabeçalhos aceitos para a tabela de disciplinas com data. A ordem das colunas
-// é lida do cabeçalho, não fixada, para o arquivo tolerar quem as reordene.
+// é lida do cabeçalho, não fixada, para o arquivo tolerar quem as reordene — a
+// ordem aqui só decide a ordem em que o modelo em branco é gerado.
 export const COLUNAS_DISCIPLINAS = [
   {
     chave: "modalidade",
     rotulo: "Modalidade",
     sinonimos: ["tipo", "formato"],
   },
+  COLUNA_TIPO_AULA,
   {
     chave: "nome",
     rotulo: "Disciplina",
@@ -185,16 +198,25 @@ export function definirEmCaminho(objeto, caminho, valor) {
 // esperado antes de apagar e preencher com os dados reais.
 export const DISCIPLINAS_EXEMPLO = [
   {
+    modalidade: "Ao Vivo",
+    tipoAula: "Teórica",
+    nome: "Harmonização Facial Full Face",
+    data: "26/01/2027",
+    cargaHoraria: "8h",
+  },
+  {
     modalidade: "Presencial",
+    tipoAula: "Prática",
+    nome: "Harmonização Facial Full Face",
+    data: "30/01/2027",
+    cargaHoraria: "8h",
+  },
+  {
+    modalidade: "Presencial",
+    tipoAula: "",
     nome: "Processos e Fundamentos Históricos da Educação em Saúde",
     data: "26/09/2026",
     cargaHoraria: "40h",
-  },
-  {
-    modalidade: "Ao Vivo",
-    nome: "Didática e Metodologia do Ensino para Profissionais da Área de Saúde",
-    data: "24/10/2026",
-    cargaHoraria: "",
   },
 ];
 

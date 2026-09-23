@@ -19,6 +19,28 @@ export function normalizarModalidade(texto) {
   return null;
 }
 
+// Tipo de aula: teórica ou prática. É opcional e independente da modalidade
+// — uma disciplina "Ao Vivo" pode ser a teórica de um par, e a "Presencial"
+// seguinte ser a prática correspondente.
+export const TIPOS_AULA = [
+  { canonica: "Teórica", padrao: /^te[óo]ric[ao]?$/i },
+  { canonica: "Prática", padrao: /^pr[áa]tic[ao]?$/i },
+];
+
+export function normalizarTipoAula(texto) {
+  const limpo = (texto ?? "").trim();
+  for (const { canonica, padrao } of TIPOS_AULA) {
+    if (padrao.test(limpo)) return canonica;
+  }
+  return null;
+}
+
+// No acervo, boa parte das disciplinas de capacitação já trazem "TEÓRICA:" ou
+// "PRÁTICA:" no próprio nome ("TEÓRICA: Harmonização Facial Full Face"). É um
+// sinal real, então o extrator de PDF aproveita — ao contrário da carga
+// horária, que não tem nenhuma âncora na origem.
+export const RE_PREFIXO_TIPO_AULA = /^(te[óo]ric[ao]|pr[áa]tic[ao])\s*:\s*/i;
+
 export const RE_DATA = /^\d{2}\/\d{2}\/\d{4}$/;
 // O Canva usa hífen, travessão ou meia-risca para "sem data" (disciplinas EAD).
 export const RE_SEM_DATA = /^[-–—]$/;

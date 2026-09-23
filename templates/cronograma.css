@@ -357,8 +357,11 @@ body {
   border-bottom: 1px solid var(--linha);
 }
 
+/* 190px: cabe o par mais largo do acervo (selo de Presencial + selo de
+   Teórica, ~167px medidos) numa linha só, sem quebrar. Medido antes de
+   escolher o valor — ver commit que introduziu o selo de tipo de aula. */
 .tabela col.col-modalidade {
-  width: 150px;
+  width: 190px;
 }
 .tabela col.col-data {
   width: 156px;
@@ -375,6 +378,16 @@ body {
   line-height: 1.4;
   vertical-align: middle;
   color: var(--tinta);
+}
+
+/* O selo de tipo de aula, quando existe, fica ao lado do de modalidade, na
+   mesma célula — flex-wrap como rede de segurança, mas a largura da coluna já
+   foi medida para não precisar quebrar linha nos pares reais do acervo. */
+.tabela td.celula-modalidade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
 }
 
 .tabela td.celula-nome {
@@ -416,6 +429,20 @@ body {
 .selo--outra {
   background: var(--linha);
   color: var(--tinta-media);
+}
+
+/* Tipo de aula (teórica/prática) usa cinza, não vermelho: é informação
+   secundária à modalidade, e a mesma cor faria os dois selos de uma linha
+   (ex.: "Ao Vivo" + "Teórica") se misturarem visualmente, como se fossem a
+   mesma categoria de dado. */
+.selo--teorica {
+  border-color: var(--tinta-fraca);
+  color: var(--tinta-media);
+}
+
+.selo--pratica {
+  background: var(--tinta-fraca);
+  color: var(--branco);
 }
 
 /* O dia da semana fica na mesma linha da data, e não abaixo: numa linha

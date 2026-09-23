@@ -4,6 +4,7 @@
 // servidor devolve e espera de volta. Tudo na tela é leitura ou escrita nele.
 
 const MODALIDADES = ["Presencial", "Ao Vivo", "EAD", "Online", "Híbrido"];
+const TIPOS_AULA = ["Teórica", "Prática"];
 
 // Endereços que já apareceram no acervo, oferecidos como sugestão para evitar
 // erro de digitação. Não restringem: o campo continua aceitando texto livre.
@@ -236,6 +237,18 @@ function linhaDisciplina(disciplina, indice) {
     agendarPrevia();
   });
 
+  const tipoAula = document.createElement("select");
+  tipoAula.innerHTML =
+    '<option value="">— sem tipo —</option>' +
+    TIPOS_AULA.map(
+      (nome) =>
+        `<option value="${nome}"${disciplina.tipoAula === nome ? " selected" : ""}>${nome}</option>`,
+    ).join("");
+  tipoAula.addEventListener("change", () => {
+    disciplina.tipoAula = tipoAula.value || null;
+    agendarPrevia();
+  });
+
   const nome = document.createElement("input");
   nome.type = "text";
   nome.value = disciplina.nome ?? "";
@@ -281,6 +294,7 @@ function linhaDisciplina(disciplina, indice) {
 
   for (const [conteudo, classe] of [
     [modalidade, "col-modalidade"],
+    [tipoAula, "col-tipo"],
     [nome, ""],
     [cargaHoraria, "col-carga"],
     [data, "col-data"],
@@ -325,6 +339,7 @@ function atualizarContagem() {
 $("#botao-adicionar").addEventListener("click", () => {
   dados.disciplinas.push({
     modalidade: "Presencial",
+    tipoAula: null,
     nome: "",
     data: null,
     cargaHoraria: null,
