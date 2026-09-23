@@ -130,7 +130,10 @@ app.post(
     const { pdf, paginas, avisos } = await gerarPdfDeHtml(html);
     const nome = nomeDoArquivo(dados);
 
-    registrarGeracao({
+    // Esperado, não disparado em segundo plano: numa função serverless, o
+    // que não for aguardado antes da resposta não tem garantia de terminar
+    // de executar — a instância pode ser congelada assim que o PDF sai.
+    await registrarGeracao({
       curso: dados.curso,
       turma: dados.turma?.codigo,
       tipo: dados.tipo,
@@ -153,7 +156,7 @@ app.post(
 app.get(
   "/api/historico",
   rota(async (req, res) => {
-    res.json({ persistente: persistente(), itens: listarHistorico(30) });
+    res.json({ persistente: persistente(), itens: await listarHistorico(30) });
   }),
 );
 

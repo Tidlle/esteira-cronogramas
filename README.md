@@ -53,6 +53,8 @@ topo listando quais são. Isso evita ter que conferir tudo às cegas.
 | `PORT` | `3000` | Porta do servidor |
 | `HOST` | `127.0.0.1` | Interface de escuta |
 | `TAMANHO_MAXIMO_MB` | `25` local, `4` em serverless | Limite do arquivo enviado |
+| `UPSTASH_REDIS_REST_URL` | — | Opcional; ativa o histórico de gerações persistente (ver "Histórico de gerações") |
+| `UPSTASH_REDIS_REST_TOKEN` | — | Opcional; usada junto com a anterior |
 
 O padrão deixa o sistema acessível **apenas na máquina que o executa**. Para liberar na rede
 local, use `HOST=0.0.0.0` — mas note que **não há autenticação**: quem alcançar a porta usa o
@@ -133,25 +135,39 @@ A página principal mostra os cronogramas gerados recentemente — curso, turma 
 alimentada por `POST /api/gerar`: toda geração bem-sucedida grava uma linha, e a lista atualiza
 sozinha na tela assim que o download termina.
 
-Guardado em [src/historico.mjs](src/historico.mjs), num arquivo JSON simples (sem banco — seria
-peso demais para o que é: curso, turma, tipo e data/hora de cada geração, no máximo 200
-registros, os mais antigos saindo conforme novos entram). Nunca impede a geração do PDF: uma
-falha ao gravar fica só no console do servidor.
+Guardado em [src/historico.mjs](src/historico.mjs), sempre curso, turma, tipo, páginas e
+data/hora de cada geração, no máximo 200 registros — os mais antigos saem conforme novos
+entram. Nunca impede a geração do PDF: uma falha ao gravar (Redis fora do ar, disco cheio, o
+que for) fica só no console do servidor.
 
-**Onde o arquivo mora depende de como o sistema está rodando:**
+Duas fontes possíveis, escolhidas por configuração, **nunca misturadas** — ou uma ou outra, para
+o lado de leitura não ter que reconciliar duas origens diferentes:
 
-| Execução | Caminho | Sobrevive a… |
+| Fonte | Quando é usada | Sobrevive a… |
 |---|---|---|
-| `npm start` / container | `dados/historico.json`, dentro do projeto | reinícios do processo, deploys |
-| Vercel (serverless) | `/tmp`, fora do projeto | só a instância atual — some a qualquer momento |
+| Redis (Upstash) | `UPSTASH_REDIS_REST_URL`/`TOKEN` configuradas | tudo — redeploy, instância nova, cold start |
+| Arquivo `dados/historico.json` | sem Redis, fora da Vercel | reinícios do processo, deploys (container) |
+| Arquivo em `/tmp` | sem Redis, na Vercel | só a instância atual — some a qualquer momento |
 
-Na Vercel o sistema de arquivos do projeto é somente leitura fora de `/tmp`, e `/tmp` não é
-compartilhado nem garantido entre invocações — pode sumir num redeploy, numa instância nova por
-causa de tráfego, ou só por ter ficado tempo parado. A interface avisa disso: quando
-`GET /api/historico` responde `persistente: false`, aparece um aviso discreto ao lado do título
-da lista. Para um histórico de verdade, confiável entre deploys, o caminho é a publicação em
-container (seção "Publicar" acima), que não tem essa restrição — o arquivo fica no disco do
-próprio container, como no `npm start`.
+**Sem Redis configurado**, o padrão de fábrica é o arquivo — funciona bem em execução local ou
+em container, mas na Vercel esbarra no mesmo problema de sempre: o projeto é somente leitura
+fora de `/tmp`, e `/tmp` não é compartilhado nem garantido entre invocações.
+
+**Para o histórico não correr esse risco na Vercel**, ligue o Redis:
+
+```bash
+vercel install upstash
+```
+
+Isso cria (ou conecta) um banco Upstash pelo Marketplace da Vercel e injeta
+`UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` no projeto automaticamente — nenhuma
+mudança de código é necessária, `src/historico.mjs` detecta as variáveis sozinho na próxima
+geração. Funciona local também, se as mesmas variáveis estiverem no ambiente (`vercel env pull`
+traz elas para `.env.local`).
+
+A interface sabe qual fonte está em uso: quando `GET /api/historico` responde
+`persistente: false` (sem Redis e em serverless), aparece um aviso discreto ao lado do título da
+lista. Com Redis configurado, `persistente` é sempre `true`, em qualquer ambiente.
 
 ## Linha de comando
 
@@ -435,6 +451,8 @@ quanto EAD.
 
 - [`express`](https://expressjs.com/) e [`multer`](https://github.com/expressjs/multer) — servidor e upload
 - [`playwright`](https://playwright.dev/) — renderiza o HTML e exporta o PDF
+- [`@sparticuz/chromium`](https://github.com/Sparticuz/chromium) — Chromium para o PDF em serverless (ver "Publicar")
+- [`@upstash/redis`](https://github.com/upstash/redis-js) — histórico de gerações persistente em serverless (opcional, ver "Histórico de gerações")
 - [`pdfjs-dist`](https://github.com/mozilla/pdf.js) — leitura posicional do texto dos PDFs
 - [`jszip`](https://stuk.github.io/jszip/) — abertura do `.docx`, que é um zip
 - [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser) — leitura do `word/document.xml`
