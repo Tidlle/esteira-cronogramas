@@ -420,10 +420,21 @@ body {
 
 /* O dia da semana fica na mesma linha da data, e não abaixo: numa linha
    própria ele custava cerca de 20px por disciplina e derrubava o número de
-   linhas por página de 12 para 9. */
+   linhas por página de 12 para 9.
+
+   Largura fixa, e não só a margem: a célula é alinhada à direita como um
+   bloco (data + dia), e "dom" (25px) contra "ter" (15px) numa fonte
+   proporcional muda o bloco em quase 10px de uma linha para a outra — a
+   data em si passa a começar em posições diferentes a cada linha, mesmo
+   ela própria tendo sempre 10 caracteres. Uma largura fixa, maior que a
+   abreviação mais larga do acervo, resolve porque o que varia deixa de
+   empurrar o que não devia. */
 .data-dia {
+  display: inline-block;
+  width: 28px;
   margin-left: 6px;
   font-size: 12px;
+  text-align: left;
   color: var(--tinta-fraca);
 }
 
