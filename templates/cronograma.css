@@ -236,9 +236,15 @@ body {
 }
 
 /* Com cinco cartões a última linha ficaria com um buraco; o endereço ocupa as
-   duas colunas restantes e fecha a grade. */
+   duas colunas restantes e fecha a grade. Com sete, a última linha fica com
+   um cartão só, que ocupa a linha inteira. Seis cartões preenche a grade
+   sozinho (3x2), sem precisar de ajuste. */
 .cartoes--cinco .cartao:last-child {
   grid-column: span 2;
+}
+
+.cartoes--sete .cartao:last-child {
+  grid-column: span 3;
 }
 
 /* Conteúdo centralizado na vertical: os cartões de uma linha têm a mesma
@@ -273,6 +279,13 @@ body {
   font-size: 14.5px;
   line-height: 1.5;
   color: var(--tinta-media);
+}
+
+/* Texto bem mais longo que o usual (ver htmlCartoes em build-cronograma.mjs) —
+   fonte menor pra caber sem estourar a altura da linha da grade. */
+.cartao--compacto .cartao__texto {
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 
 .avisos {
@@ -331,13 +344,6 @@ body {
   padding: 4px 24px 12px;
   background: var(--branco);
   border-radius: 12px;
-}
-
-/* Aplicado pelo script à última página, depois de paginar: durante a
-   distribuição o quadro precisa ter altura fixa, senão nunca acusa estouro e
-   não há onde quebrar. */
-.quadro--conteudo {
-  flex: 0 0 auto;
 }
 
 .tabela {

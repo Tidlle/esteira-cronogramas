@@ -7,6 +7,7 @@
     "Campos disponíveis: {curso} {turma} {diaSemana} {encontros}",
     "{horarioPresencial} {horarioAoVivo} {intervalo} {endereco}",
     "{capacidadeMaxima} {limiteFaltas} {intervaloFrase} {temAoVivo}",
+    "{temAulaPratica}",
     "",
     "Um card ou aviso com \"condicao\" só aparece quando aquele campo é",
     "verdadeiro; com \"condicaoAusente\", só quando é falso. As duas permitem",
@@ -49,6 +50,12 @@
         "titulo": "Estágios",
         "condicao": "temEstagios",
         "texto": "Após a conclusão do conteúdo teórico, o curso conta com campos de estágio, com vivência prática e aplicação dos conhecimentos adquiridos."
+      },
+      {
+        "icone": "pulso",
+        "titulo": "Aulas práticas",
+        "condicao": "temAulaPratica",
+        "texto": "O curso possui aulas práticas realizadas em hospital parceiro da instituição, proporcionando aos alunos a vivência prática dos conteúdos desenvolvidos durante a formação. As atividades práticas acontecem aos sábados, no mesmo horário previsto para as aulas teóricas, conforme cronograma acadêmico disponibilizado aos alunos."
       },
       {
         "icone": "endereco",
@@ -94,6 +101,12 @@
         "icone": "livros",
         "titulo": "Disciplinas EAD",
         "texto": "Conteúdo complementar online obrigatório, que aprofunda os temas abordados nas aulas presenciais e síncronas."
+      },
+      {
+        "icone": "pulso",
+        "titulo": "Aulas práticas",
+        "condicao": "temAulaPratica",
+        "texto": "O curso possui aulas práticas realizadas em hospital parceiro da instituição, proporcionando aos alunos a vivência prática dos conteúdos desenvolvidos durante a formação. As atividades práticas acontecem aos sábados, no mesmo horário previsto para as aulas teóricas, conforme cronograma acadêmico disponibilizado aos alunos."
       },
       {
         "icone": "endereco",

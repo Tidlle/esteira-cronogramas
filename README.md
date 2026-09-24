@@ -340,6 +340,14 @@ não o formulário.
 O card de "Estágios" (`pos-graduacao`) usa o mesmo `condicao`, mas sem par — simplesmente some
 quando não há estágio, porque não existe um tema substituto natural para esse card.
 
+O card "Aulas práticas" (nas duas famílias) segue o mesmo padrão de `temAoVivo`: `temAulaPratica`
+é derivado de `dados.disciplinas`, verdadeiro quando existe ao menos uma disciplina com
+`tipoAula: "Prática"` na grade. A grade de cartões tem 3 colunas; com 5 ou 7 cartões a última
+linha ficaria incompleta, então o último cartão ocupa as colunas que sobrarem (classes
+`cartoes--cinco` e `cartoes--sete` em `templates/cronograma.css`) — com 6 a grade já fecha
+sozinha. Um cartão com texto bem mais longo que o usual (caso do "Aulas práticas") recebe a
+classe `cartao--compacto`, com fonte menor, para não estourar a altura da linha da grade.
+
 ## Template e geração do PDF
 
 O HTML sai **autocontido** — CSS, ícones e logo embutidos —, para ser aberto direto no navegador
@@ -355,9 +363,10 @@ disciplina quebra, e os nomes do acervo vão de 14 a 118 caracteres. A medição
 `document.fonts.ready`: medindo com a fonte de fallback as linhas saem mais baixas, cabe uma a
 mais por página, e quando a fonte definitiva entra a última linha é cortada.
 
-Dois acabamentos: a última página puxa linhas da anterior quando ficaria com menos de quatro
-(evita página órfã), e seu cartão passa a ter a altura do conteúdo em vez de esticar até o pé —
-a não ser que a página esteja cheia.
+Cada página recebe o máximo de linhas que couber, com espaçamento fixo entre elas; o que sobra vai
+para a próxima sem tocar nas páginas já fechadas — nenhuma linha é puxada de volta para
+"equilibrar" a última página. Uma última página que não fica cheia mantém as linhas no tamanho
+normal e o espaço sobrando em branco, em vez de esticar o espaçamento para preencher a página.
 
 As disciplinas EAD sem data saem da tabela cronológica e vão para um bloco próprio ao fim,
 dentro do mesmo cartão. Elas não têm data porque ficam liberadas o curso inteiro; no meio das

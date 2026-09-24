@@ -36,6 +36,8 @@ const ICONES = {
     '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.2v.1"/>',
   relogio:
     '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  pulso:
+    '<path d="M2 12h4l1.5-4L11 17l2.5-10L15 12h7"/>',
 };
 
 const DIAS_ABREVIADOS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -150,6 +152,7 @@ function camposDoTexto(dados) {
     // de fato (ou vice-versa), e o card/avisos precisam responder ao que
     // realmente está na grade, não a um campo de formulário desalinhado dela.
     temAoVivo: (dados.disciplinas ?? []).some((d) => d.modalidade === "Ao Vivo"),
+    temAulaPratica: (dados.disciplinas ?? []).some((d) => d.tipoAula === "Prática"),
   };
 }
 
@@ -206,15 +209,19 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
     atendeCondicao(cartao, campos),
   );
 
+  // Cartões com texto bem mais longo que o usual (ex.: "Aulas práticas")
+  // quebram em linhas demais no tamanho normal e estouram a altura da grade —
+  // uma fonte um pouco menor evita isso sem precisar reescrever o texto.
   const htmlCartoes = cartoes
-    .map(
-      (cartao) => `
-          <article class="cartao">
+    .map((cartao) => {
+      const texto = preencher(cartao.texto, campos);
+      return `
+          <article class="cartao${texto.length > 200 ? " cartao--compacto" : ""}">
             ${icone(cartao.icone, "cartao__icone")}
             <h2 class="cartao__titulo">${escapar(cartao.titulo)}</h2>
-            <p class="cartao__texto">${preencher(cartao.texto, campos)}</p>
-          </article>`,
-    )
+            <p class="cartao__texto">${texto}</p>
+          </article>`;
+    })
     .join("");
 
   // Cada aviso pode ser um texto fixo (string) ou um objeto com condição —
@@ -233,7 +240,13 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
         ${montarCabecalho(dados, familia, "Apresentação do cronograma", logoEmbutido)}
         <div class="corpo">
           <div class="ficha">${ficha}</div>
-          <div class="cartoes${cartoes.length === 5 ? " cartoes--cinco" : ""}">${htmlCartoes}</div>
+          <div class="cartoes${
+            cartoes.length === 5
+              ? " cartoes--cinco"
+              : cartoes.length === 7
+                ? " cartoes--sete"
+                : ""
+          }">${htmlCartoes}</div>
           <div class="avisos">
             <p class="avisos__titulo">${icone("atencao")} Informações importantes</p>
             <ul class="avisos__lista">${avisos}</ul>
@@ -393,33 +406,24 @@ const SCRIPT_PAGINACAO = `
       // quadro: o corpo é flex e nunca acusa estouro — quem cede altura é a
       // tabela, silenciosamente.
       if (estourou(atual)) {
-        // A tabela da página nova fica: o balanceamento logo abaixo traz
-        // linhas para acompanhar o bloco, em vez de gastar uma folha inteira
-        // com meia dúzia de nomes de disciplina.
+        // As linhas datadas foram distribuídas sem saber que o EAD ainda
+        // precisaria de espaço, então perto do limite de uma página o
+        // conjunto estoura por pouco mesmo quando quase cabia. Quando isso
+        // acontece, a página nova do EAD pode sair com poucas ou nenhuma
+        // linha de tabela — não tem problema, só sobra espaço em branco.
         atual.areaEad.innerHTML = "";
         atual = novaPagina();
         atual.areaEad.innerHTML = htmlEad;
       }
     }
 
-    // Evita última página órfã: com 15 linhas e 14 cabendo na primeira, a
-    // segunda ficava com uma linha só. Puxa linhas da anterior enquanto couberem.
+    // Uma última página com poucas linhas fica com espaço em branco embaixo —
+    // não puxa linhas da página anterior para "equilibrar". Isso já foi
+    // tentado e tinha um efeito colateral ruim: o critério só contava linhas
+    // da tabela, ignorando o bloco EAD; numa última página cujo EAD sozinho já
+    // ocupa boa parte do espaço, isso arrancava linhas que cabiam
+    // perfeitamente na página anterior sem necessidade nenhuma.
     var ultima = folhas[folhas.length - 1];
-    var penultima = folhas[folhas.length - 2];
-    if (penultima) {
-      while (
-        ultima.corpo.children.length < 4 &&
-        penultima.corpo.children.length > 4
-      ) {
-        var movida = penultima.corpo.lastElementChild;
-        ultima.corpo.insertBefore(movida, ultima.corpo.firstChild);
-        if (estourou(ultima)) {
-          ultima.corpo.removeChild(movida);
-          penultima.corpo.appendChild(movida);
-          break;
-        }
-      }
-    }
 
     // Se nem assim veio linha nenhuma, a tabela vazia — que seria só um
     // cabeçalho solto — sai, e o bloco EAD perde o filete que não separa nada.
@@ -428,16 +432,6 @@ const SCRIPT_PAGINACAO = `
       var tabelaVazia = ultima.pagina.querySelector(".tabela");
       if (tabelaVazia) tabelaVazia.remove();
       if (blocoEad) blocoEad.classList.add("bloco-ead--sozinho");
-    }
-
-    // Na última página o quadro passa a ter a altura do conteúdo. Esticado até
-    // o pé com três ou quatro linhas, ele vira um retângulo branco quase vazio.
-    // Se a página estiver cheia, porém, soltar a altura faz o quadro transbordar
-    // o corpo — aí fica esticado mesmo.
-    var corpoDaUltima = ultima.pagina.querySelector(".corpo");
-    ultima.quadro.classList.add("quadro--conteudo");
-    if (corpoDaUltima.scrollHeight > corpoDaUltima.clientHeight + 1) {
-      ultima.quadro.classList.remove("quadro--conteudo");
     }
 
     var paginas = container.querySelectorAll(".pagina");
