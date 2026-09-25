@@ -28,8 +28,47 @@ const ROTULOS = {
   limiteFaltas: "Limite de faltas",
 };
 
+const ROTULOS_ICONES = {
+  presenca: "Presença",
+  hospital: "Hospital",
+  livros: "Livros",
+  plataforma: "Plataforma",
+  endereco: "Endereço",
+  gravadas: "Gravadas",
+  aovivo: "Ao vivo",
+  estagio: "Estágio",
+  atencao: "Atenção",
+  relogio: "Relógio",
+  pulso: "Pulso",
+};
+
+// Por que cada card condicional aparece ou não — só pros que o boilerplate
+// hoje usa; um condicao sem entrada aqui simplesmente não mostra a dica.
+const CONDICOES_TEXTO = {
+  temAoVivo: "Aparece só quando há alguma disciplina Ao Vivo na grade.",
+  temAulaPratica: "Aparece só quando há alguma disciplina do tipo Prática na grade.",
+  temEstagios: "Aparece só quando o curso tem estágio.",
+};
+
 let dados = null;
 let urlPdf = null;
+
+// Título, texto e ícone padrão dos cards da apresentação, por tipo de curso —
+// vêm do servidor (templates/boilerplate.json) pra tela de revisão partir de
+// algo pronto. Não fica no arquivo modelo docx: é só um ponto de partida que
+// o usuário edita se quiser, guardado em dados.cartoes.
+let configApresentacao = { familias: {}, icones: [] };
+const configApresentacaoPromise = fetch("/api/apresentacao")
+  .then((r) => r.json())
+  .then((config) => {
+    configApresentacao = config;
+  })
+  .catch(() => {});
+
+function cartoesPadrao(tipo) {
+  const cards = configApresentacao.familias?.[tipo]?.cards ?? [];
+  return cards.map((cartao) => ({ ...cartao }));
+}
 
 const $ = (seletor) => document.querySelector(seletor);
 const etapas = {
@@ -112,6 +151,7 @@ async function enviar(arquivo) {
     }
 
     dados = retorno.dados;
+    await configApresentacaoPromise;
     normalizarDados();
     montarRevisao();
     mostrarEtapa("revisao");
@@ -130,6 +170,9 @@ function normalizarDados() {
   dados.variaveis ??= {};
   dados.disciplinas ??= [];
   dados._meta ??= {};
+  if (!Array.isArray(dados.cartoes) || !dados.cartoes.length) {
+    dados.cartoes = cartoesPadrao(dados.tipo);
+  }
 }
 
 /* --- revisão -------------------------------------------------------------- */
@@ -162,6 +205,7 @@ function montarRevisao() {
 
   montarAvisos(faltando);
   montarDisciplinas();
+  montarCartoes();
 }
 
 function montarAvisos(faltando) {
@@ -210,6 +254,14 @@ for (const campo of camposForm) {
     }
 
     campo.closest(".campo").classList.remove("campo--faltando");
+
+    // Trocar o tipo de curso troca também o conjunto de cards possível — os
+    // da família antiga não fazem sentido na nova, então reparte do padrão.
+    if (caminho === "tipo") {
+      dados.cartoes = cartoesPadrao(dados.tipo);
+      montarCartoes();
+    }
+
     agendarPrevia();
   });
 }
@@ -348,6 +400,69 @@ $("#botao-adicionar").addEventListener("click", () => {
   // Leva o cursor direto para o nome da disciplina recém-criada.
   corpoDisciplinas.lastElementChild?.querySelector('input[type="text"]')?.focus();
 });
+
+/* --- cards da apresentação -------------------------------------------------- */
+
+const cartoesApresentacao = $("#cartoes-apresentacao");
+
+function montarCartoes() {
+  cartoesApresentacao.innerHTML = "";
+  dados.cartoes.forEach((cartao) => {
+    cartoesApresentacao.appendChild(linhaCartao(cartao));
+  });
+}
+
+function linhaCartao(cartao) {
+  const bloco = document.createElement("div");
+  bloco.className = "cartao-editor";
+
+  const icones = configApresentacao.icones ?? [];
+  const selectIcone = document.createElement("select");
+  selectIcone.className = "cartao-editor__icone";
+  selectIcone.innerHTML = icones
+    .map(
+      (nome) =>
+        `<option value="${nome}"${cartao.icone === nome ? " selected" : ""}>${
+          ROTULOS_ICONES[nome] ?? nome
+        }</option>`,
+    )
+    .join("");
+  selectIcone.addEventListener("change", () => {
+    cartao.icone = selectIcone.value;
+    agendarPrevia();
+  });
+
+  const inputTitulo = document.createElement("input");
+  inputTitulo.type = "text";
+  inputTitulo.className = "cartao-editor__titulo";
+  inputTitulo.value = cartao.titulo ?? "";
+  inputTitulo.addEventListener("input", () => {
+    cartao.titulo = inputTitulo.value;
+    agendarPrevia();
+  });
+
+  const textareaTexto = document.createElement("textarea");
+  textareaTexto.className = "cartao-editor__texto";
+  textareaTexto.rows = 2;
+  textareaTexto.value = cartao.texto ?? "";
+  textareaTexto.addEventListener("input", () => {
+    cartao.texto = textareaTexto.value;
+    agendarPrevia();
+  });
+
+  bloco.append(selectIcone, inputTitulo, textareaTexto);
+
+  const condicaoChave = cartao.condicao ?? cartao.condicaoAusente;
+  const condicaoTexto = CONDICOES_TEXTO[condicaoChave];
+  if (condicaoTexto) {
+    const dica = document.createElement("p");
+    dica.className = "cartao-editor__condicao";
+    dica.textContent = condicaoTexto;
+    bloco.appendChild(dica);
+  }
+
+  return bloco;
+}
 
 /* --- prévia --------------------------------------------------------------- */
 

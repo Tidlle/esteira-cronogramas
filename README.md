@@ -120,6 +120,7 @@ CMD ["node", "server.mjs"]
 |---|---|
 | `GET /` | Interface |
 | `GET /api/modelo` | Baixa o `MODELO-CRONOGRAMA.docx` |
+| `GET /api/apresentacao` | Devolve título/texto/ícone padrão dos cards por família, e a lista de ícones |
 | `POST /api/extrair` | Recebe o arquivo (campo `arquivo`, multipart) e devolve o JSON extraído |
 | `POST /api/previa` | Recebe o JSON e devolve o HTML do cronograma |
 | `POST /api/gerar` | Recebe o JSON e devolve o PDF, e registra a geração no histórico |
@@ -347,6 +348,15 @@ linha ficaria incompleta, então o último cartão ocupa as colunas que sobrarem
 `cartoes--cinco` e `cartoes--sete` em `templates/cronograma.css`) — com 6 a grade já fecha
 sozinha. Um cartão com texto bem mais longo que o usual (caso do "Aulas práticas") recebe a
 classe `cartao--compacto`, com fonte menor, para não estourar a altura da linha da grade.
+
+Título, texto e ícone de cada card são editáveis na tela de revisão, partindo do padrão da
+família — não ficam no arquivo modelo `.docx`, então não há como extraí-los do arquivo enviado.
+`GET /api/apresentacao` devolve esse padrão (lido de `templates/boilerplate.json`) e a lista de
+ícones disponíveis; a tela guarda a versão editada em `dados.cartoes`, que `construirHtml()` usa
+no lugar da lista da família quando presente (`condicao`/`condicaoAusente` de cada card seguem
+valendo, só não são editáveis pela interface). Trocar o campo "Tipo" na revisão reparte
+`dados.cartoes` do zero com o padrão da nova família — os cards de uma família não fazem sentido
+na outra.
 
 ## Template e geração do PDF
 

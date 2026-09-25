@@ -203,11 +203,18 @@ function montarApresentacao(dados, familia, campos, logoEmbutido) {
     )
     .join("");
 
+  // A tela de revisão manda os cards já com título/texto/ícone que o usuário
+  // pode ter editado (partindo do padrão da família — ver cartoesPadrao()).
+  // Sem isso (chamada vinda de outro lugar, ou dados antigos sem o campo),
+  // cai no padrão da família, como sempre foi.
+  const origemCartoes =
+    Array.isArray(dados.cartoes) && dados.cartoes.length
+      ? dados.cartoes
+      : (familia.cards ?? []);
+
   // Um cartão condicionado a um campo vazio sai fora, em vez de aparecer com
   // um espaço em branco no lugar do valor.
-  const cartoes = (familia.cards ?? []).filter((cartao) =>
-    atendeCondicao(cartao, campos),
-  );
+  const cartoes = origemCartoes.filter((cartao) => atendeCondicao(cartao, campos));
 
   // Cartões com texto bem mais longo que o usual (ex.: "Aulas práticas")
   // quebram em linhas demais no tamanho normal e estouram a altura da grade —
@@ -524,4 +531,22 @@ ${montarApresentacao(dados, familia, campos, logoEmbutido)}
 
 export function familiasDisponiveis() {
   return Object.keys(BOILERPLATE).filter((chave) => !chave.startsWith("_"));
+}
+
+/**
+ * Título, texto e ícone de cada card, por família — o padrão que a tela de
+ * revisão usa para partir de algo pronto, deixando o usuário editar só se
+ * quiser (ver dados.cartoes em montarApresentacao). Não inclui os avisos:
+ * só os cards têm pedido de campo editável.
+ */
+export function apresentacaoConfig() {
+  const familias = {};
+  for (const tipo of familiasDisponiveis()) {
+    const familia = BOILERPLATE[tipo];
+    familias[tipo] = {
+      rotulo: familia.rotulo,
+      cards: (familia.cards ?? []).map((cartao) => ({ ...cartao })),
+    };
+  }
+  return { familias, icones: Object.keys(ICONES) };
 }

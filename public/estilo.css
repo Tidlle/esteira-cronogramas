@@ -378,6 +378,61 @@ select:focus {
   transform-origin: top left;
 }
 
+/* --- cards da apresentação ------------------------------------------------ */
+
+.cartoes-editor__ajuda {
+  margin: -6px 0 12px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.cartoes-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cartao-editor {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px 12px;
+  padding: 12px 14px;
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+}
+
+.cartao-editor__icone {
+  grid-row: 1 / 3;
+  align-self: start;
+  padding: 7px 8px;
+  font-size: 13.5px;
+}
+
+.cartao-editor__titulo {
+  font-weight: 500;
+}
+
+.cartao-editor__texto {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--tinta);
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.cartao-editor__condicao {
+  grid-column: 2;
+  margin-top: -2px;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
 /* --- botões e avisos ----------------------------------------------------- */
 
 .botao {

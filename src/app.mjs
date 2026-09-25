@@ -11,7 +11,7 @@ import express from "express";
 import multer from "multer";
 
 import { emServerless } from "./ambiente.mjs";
-import { construirHtml } from "./build-cronograma.mjs";
+import { apresentacaoConfig, construirHtml } from "./build-cronograma.mjs";
 import { extrair } from "./extract/index.mjs";
 import { gerarPdfDeHtml, nomeDoArquivo } from "./generate-pdf.mjs";
 import { listarHistorico, persistente, registrarGeracao } from "./historico.mjs";
@@ -59,6 +59,13 @@ app.get(
       return;
     }
     res.download(caminho, "MODELO-CRONOGRAMA.docx");
+  }),
+);
+
+app.get(
+  "/api/apresentacao",
+  rota(async (req, res) => {
+    res.json(apresentacaoConfig());
   }),
 );
 
