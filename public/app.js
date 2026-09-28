@@ -3,7 +3,7 @@
 // Os dados extraídos ficam num único objeto (`dados`), no mesmo formato que o
 // servidor devolve e espera de volta. Tudo na tela é leitura ou escrita nele.
 
-const MODALIDADES = ["Presencial", "Ao Vivo", "EAD", "Online", "Híbrido"];
+const MODALIDADES = ["Presencial", "Ao Vivo", "Gravação", "EAD", "Online", "Híbrido"];
 const TIPOS_AULA = ["Teórica", "Prática"];
 
 // Endereços que já apareceram no acervo, oferecidos como sugestão para evitar

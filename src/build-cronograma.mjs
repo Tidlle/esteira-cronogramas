@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { normalizarData } from "./extract/layouts.mjs";
+
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RAIZ = path.join(AQUI, "..");
 
@@ -84,6 +86,8 @@ function classeDoSelo(modalidade) {
       return "selo--presencial";
     case "Ao Vivo":
       return "selo--aovivo";
+    case "Gravação":
+      return "selo--gravacao";
     case "EAD":
       return "selo--ead";
     default:
@@ -120,7 +124,7 @@ function montarSelosModalidade(disciplina) {
 
 /** Dia da semana de uma data dd/mm/aaaa, para conferir se caiu no dia da turma. */
 function diaDaSemana(data) {
-  const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data ?? "");
+  const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalizarData(data) ?? "");
   if (!partes) return null;
   const [, dia, mes, ano] = partes;
   const quando = new Date(Number(ano), Number(mes) - 1, Number(dia));
@@ -274,9 +278,10 @@ function seloCargaHoraria(cargaHoraria) {
 }
 
 function montarLinha(disciplina) {
-  const dia = diaDaSemana(disciplina.data);
-  const data = disciplina.data
-    ? `${escapar(disciplina.data)}${dia ? `<span class="data-dia">${dia}</span>` : ""}`
+  const dataNormalizada = normalizarData(disciplina.data);
+  const dia = diaDaSemana(dataNormalizada);
+  const data = dataNormalizada
+    ? `${escapar(dataNormalizada)}${dia ? `<span class="data-dia">${dia}</span>` : ""}`
     : '<span class="data-vazia">—</span>';
 
   return `<tr>

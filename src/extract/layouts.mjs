@@ -5,6 +5,7 @@
 export const MODALIDADES = [
   { canonica: "Presencial", padrao: /^presencial$/i },
   { canonica: "Ao Vivo", padrao: /^ao\s*vivo$/i },
+  { canonica: "Gravação", padrao: /^grava(d[ao]|[çc][ãa]o)$/i },
   { canonica: "EAD", padrao: /^ead$/i },
   { canonica: "Online", padrao: /^online$/i },
   { canonica: "Híbrido", padrao: /^h[íi]brido$/i },
@@ -42,6 +43,19 @@ export function normalizarTipoAula(texto) {
 export const RE_PREFIXO_TIPO_AULA = /^(te[óo]ric[ao]|pr[áa]tic[ao])\s*:\s*/i;
 
 export const RE_DATA = /^\d{2}\/\d{2}\/\d{4}$/;
+
+/**
+ * Preenche dia/mês com zero à esquerda quando vêm com um dígito só. O Word
+ * reformata uma data digitada numa célula de tabela pro formato curto do
+ * sistema, que costuma comer o zero ("07/03/2027" vira "7/03/2027") — e o
+ * mesmo pode acontecer numa data redigitada à mão na tela de revisão.
+ */
+export function normalizarData(bruta) {
+  const partes = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((bruta ?? "").trim());
+  if (!partes) return bruta;
+  const pad = (n) => n.padStart(2, "0");
+  return `${pad(partes[1])}/${pad(partes[2])}/${partes[3]}`;
+}
 // O Canva usa hífen, travessão ou meia-risca para "sem data" (disciplinas EAD).
 export const RE_SEM_DATA = /^[-–—]$/;
 // Estágios aparecem com a data ainda em aberto, no fim do nome da disciplina.

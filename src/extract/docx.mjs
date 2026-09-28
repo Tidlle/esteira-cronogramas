@@ -5,6 +5,7 @@ import JSZip from "jszip";
 
 import {
   detectarFamilia,
+  normalizarData,
   normalizarModalidade,
   normalizarTipoAula,
   opcionaisDaFamilia,
@@ -293,7 +294,7 @@ export async function extrairDeDocx(caminho) {
       const dataBruta = (iData >= 0 ? linha[iData] : "")?.trim() ?? "";
       const data = /a\s*definir/i.test(dataBruta)
         ? "A definir"
-        : dataBruta || null;
+        : normalizarData(dataBruta) || null;
 
       const cargaHoraria =
         (iCargaHoraria >= 0 ? linha[iCargaHoraria] : "")?.trim() || null;

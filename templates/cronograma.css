@@ -426,6 +426,13 @@ body {
   color: var(--vermelho);
 }
 
+/* Conteúdo gravado, não ao vivo nem presencial — tom suave, pra não competir
+   com o vermelho cheio de "Presencial"/"EAD" nem com o contorno de "Ao Vivo". */
+.selo--gravacao {
+  background: var(--rosa-claro);
+  color: var(--vermelho-escuro);
+}
+
 .selo--ead {
   background: var(--vermelho);
   color: var(--branco);

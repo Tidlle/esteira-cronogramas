@@ -250,7 +250,7 @@ entre arquivos do acervo.
 modalidade. O cronograma pode ocupar mais de uma página.
 
 **Tabela de disciplinas** — ancorada nas células de modalidade (`Presencial`, `Ao Vivo`,
-`EAD`, `Online`, `Híbrido`), o único vocabulário fechado do documento. Cada âncora define uma
+`Gravação`, `EAD`, `Online`, `Híbrido`), o único vocabulário fechado do documento. Cada âncora define uma
 linha, e os limites verticais saem dos pontos médios entre âncoras vizinhas, o que se adapta a
 linhas de alturas diferentes. O número de metades lado a lado sai do agrupamento horizontal das
 âncoras — a pós-graduação usa duas, a capacitação uma só.
