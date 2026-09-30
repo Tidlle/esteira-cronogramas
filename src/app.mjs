@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import multer from "multer";
 
+import { sincronizarAgenda } from "./agenda.mjs";
 import { emServerless } from "./ambiente.mjs";
 import { apresentacaoConfig, construirHtml } from "./build-cronograma.mjs";
 import { extrair } from "./extract/index.mjs";
@@ -146,6 +147,16 @@ app.post(
       tipo: dados.tipo,
       paginas,
     });
+
+    // Sem agenda configurada, sincronizarAgenda() nem tenta nada. Uma falha
+    // real (token recusado, conta de serviço sem acesso) não impede o
+    // download do PDF — só vira aviso ao lado dele.
+    const resultadoAgenda = await sincronizarAgenda(dados);
+    if (!resultadoAgenda.sincronizado && resultadoAgenda.erro) {
+      avisos.push(
+        `Não foi possível sincronizar com a Google Agenda: ${resultadoAgenda.erro}`,
+      );
+    }
 
     res.setHeader("Content-Type", "application/pdf");
     // encodeURIComponent no filename* preserva acentos em qualquer navegador.

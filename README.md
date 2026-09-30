@@ -55,6 +55,9 @@ topo listando quais são. Isso evita ter que conferir tudo às cegas.
 | `TAMANHO_MAXIMO_MB` | `25` local, `4` em serverless | Limite do arquivo enviado |
 | `UPSTASH_REDIS_REST_URL` | — | Opcional; ativa o histórico de gerações persistente (ver "Histórico de gerações") |
 | `UPSTASH_REDIS_REST_TOKEN` | — | Opcional; usada junto com a anterior |
+| `GOOGLE_CALENDAR_ID` | — | Opcional; ativa a sincronização com Google Agenda (ver seção abaixo) |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | — | Opcional; usada junto com as duas de agenda |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | — | Opcional; usada junto com as duas de agenda |
 
 O padrão deixa o sistema acessível **apenas na máquina que o executa**. Para liberar na rede
 local, use `HOST=0.0.0.0` — mas note que **não há autenticação**: quem alcançar a porta usa o
@@ -169,6 +172,50 @@ traz elas para `.env.local`).
 A interface sabe qual fonte está em uso: quando `GET /api/historico` responde
 `persistente: false` (sem Redis e em serverless), aparece um aviso discreto ao lado do título da
 lista. Com Redis configurado, `persistente` é sempre `true`, em qualquer ambiente.
+
+## Sincronização com Google Agenda
+
+Toda geração de PDF bem-sucedida pode também criar um evento por disciplina com data numa Google
+Agenda — um por `POST /api/gerar`, em [src/agenda.mjs](src/agenda.mjs). Opcional: sem as três
+variáveis abaixo configuradas, esse passo nem é tentado, e nada muda no resto do fluxo.
+
+| Variável | Onde conseguir |
+|---|---|
+| `GOOGLE_CALENDAR_ID` | Configurações da agenda → **Integrar agenda** → *ID da agenda* |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | E-mail da conta de serviço (`...@...iam.gserviceaccount.com`), no Google Cloud Console |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | Chave privada da conta de serviço, campo `private_key` do JSON baixado no Cloud Console |
+
+Passos, do zero:
+
+1. No [Google Cloud Console](https://console.cloud.google.com), crie (ou reaproveite) um projeto,
+   ative a **Google Calendar API** e crie uma conta de serviço. Baixe a chave em formato JSON.
+2. Na [Google Agenda](https://calendar.google.com), compartilhe a agenda de destino com o e-mail
+   da conta de serviço, com a permissão **"Fazer alterações e ver todos os detalhes dos
+   eventos"** — sem essa permissão as chamadas de criação são recusadas.
+3. Preencha as três variáveis: `GOOGLE_CALENDAR_ID` e `GOOGLE_SERVICE_ACCOUNT_EMAIL` saem direto
+   do que os passos acima geraram; `GOOGLE_SERVICE_ACCOUNT_KEY` é o campo `private_key` do JSON
+   baixado — inclui os `\n` literais de quebra de linha, e é isso mesmo, `src/agenda.mjs`
+   converte de volta antes de assinar. Na Vercel, cole o valor inteiro (com as aspas do JSON) na
+   variável de ambiente do projeto; localmente, no shell antes de `npm start`.
+
+Autenticação é feita na mão — sem a biblioteca `googleapis` (pesada para o que é usado aqui): um
+JWT assinado com a chave da conta de serviço (`crypto.sign`, RS256) é trocado por um token de
+acesso OAuth2, e as chamadas seguintes são `fetch` direto na API REST do Calendar.
+
+**Idempotência por exclusão e recriação.** Cada evento carrega, num campo privado
+(`extendedProperties.private`), uma chave estável do cronograma (`curso::turma`). A cada
+geração, todos os eventos com essa chave são apagados e recriados — mais simples que comparar
+disciplina a disciplina, e limpa sozinho um evento cuja disciplina foi removida ou teve a data
+alterada numa geração seguinte.
+
+Disciplinas sem data (EAD, "A definir") não viram evento — não têm quando ancorar. Uma
+disciplina Presencial ou Ao Vivo com o horário do curso reconhecível (`08h00 às 15h00`) vira
+evento com hora marcada; as demais (inclusive Presencial/Ao Vivo com horário em formato
+inesperado) viram evento de dia inteiro. Presencial ganha o endereço do curso como local do
+evento.
+
+Uma falha aqui (agenda não configurada, token recusado, conta de serviço sem acesso à agenda)
+nunca impede o download do PDF — vira só um aviso ao lado dele, como os demais avisos de geração.
 
 ## Linha de comando
 
