@@ -173,7 +173,14 @@ async function apagarEventosExistentes(token, chave) {
     { headers: { Authorization: `Bearer ${token}` } },
   );
   if (!resposta.ok) {
-    throw new Error(`listagem de eventos falhou (${resposta.status}): ${await resposta.text()}`);
+    // JSON.stringify em vez de interpolar direto: revela aspas ou espaço a
+    // mais que tenham entrado na variável de ambiente ao colar na Vercel,
+    // que senão ficam invisíveis na mensagem de erro.
+    throw new Error(
+      `listagem de eventos falhou (${resposta.status}) para GOOGLE_CALENDAR_ID=` +
+        `${JSON.stringify(process.env.GOOGLE_CALENDAR_ID)} e GOOGLE_SERVICE_ACCOUNT_EMAIL=` +
+        `${JSON.stringify(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL)}: ${await resposta.text()}`,
+    );
   }
   const { items } = await resposta.json();
 
