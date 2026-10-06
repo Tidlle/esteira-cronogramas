@@ -22,6 +22,10 @@ import {
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@",
+  // O Word divide a frase em vários `w:r` e guarda o espaço na borda do trecho
+  // ("10h00 às " + "16h00"). Com o trim padrão, o espaço some e o texto sai
+  // colado ("10h00 às16h00"); um trecho que é só um espaço some por inteiro.
+  trimValues: false,
   // Sem isto, uma tabela com uma linha só viraria objeto em vez de lista, e o
   // código teria que checar o tipo em toda travessia.
   isArray: (nome) => ["w:tbl", "w:tr", "w:tc", "w:p", "w:r"].includes(nome),

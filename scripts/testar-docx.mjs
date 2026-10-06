@@ -25,11 +25,15 @@ import { extrair } from "../src/extract/index.mjs";
 
 const pastaTemp = fs.mkdtempSync(path.join(os.tmpdir(), "cronograma-docx-"));
 
+// Uma célula pode ser uma lista de trechos: um parágrafo só, fatiado em vários
+// TextRun — como o Word faz quando a formatação muda no meio da frase.
 const celula = (texto) =>
   new TableCell({
-    children: String(texto)
-      .split("\n")
-      .map((linha) => new Paragraph({ children: [new TextRun(linha)] })),
+    children: Array.isArray(texto)
+      ? [new Paragraph({ children: texto.map((trecho) => new TextRun(trecho)) })]
+      : String(texto)
+          .split("\n")
+          .map((linha) => new Paragraph({ children: [new TextRun(linha)] })),
   });
 
 const tabela = (linhas) =>
@@ -313,6 +317,24 @@ const casos = [
     tabelas: [],
     espera: (j) =>
       j._meta.confianca === "nenhuma" && j._meta.avisos.length > 0,
+  },
+  {
+    nome: "espaco-entre-trechos",
+    descricao: "espaço na borda de um trecho do Word não some",
+    tabelas: [
+      DADOS_PADRAO.map((linha) =>
+        linha[0] === "Horário das aulas presenciais"
+          ? [linha[0], ["10h00 às ", "16h00"]]
+          : linha,
+      ),
+      [
+        ["Modalidade", "Disciplina", "Data"],
+        ["Presencial", ["Segurança ", "do", " ", "Paciente"], "25/09/2027"],
+      ],
+    ],
+    espera: (j) =>
+      j.variaveis.horarioPresencial === "10h00 às 16h00" &&
+      j.disciplinas[0].nome === "Segurança do Paciente",
   },
   {
     nome: "so-disciplinas",
